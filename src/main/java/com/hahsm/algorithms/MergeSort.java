@@ -6,6 +6,11 @@ import java.util.List;
 public class MergeSort<T extends Comparable<T>> implements Sorter<T> {
 
     @Override
+    public void sort(T[] data) {
+        throw new UnsupportedOperationException("Unimplemented method 'sort'");
+    }
+
+    @Override
     public void sort(List<T> arr) {
         final int size = arr.size();
 
