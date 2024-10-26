@@ -1,4 +1,4 @@
-package com.hahsm.datastructures;
+package com.hahsm.datastructure;
 
 public interface IndexedCollection<T> {
     public T get(int index);

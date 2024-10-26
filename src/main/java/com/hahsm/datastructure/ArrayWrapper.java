@@ -1,4 +1,4 @@
-package com.hahsm.datastructures;
+package com.hahsm.datastructure;
 
 public class ArrayWrapper<T> implements IndexedCollection<T> {
 
