@@ -14,13 +14,18 @@ public class DatabaseConnectionManager {
         this.dbName = dbName;
     }
 
-    public void initializeConnection() throws ClassNotFoundException, SQLException {
+    public void initializeConnection() throws SQLException {
         String url = ConfigLoader.getProperty(dbName, "url");
         String driver = ConfigLoader.getProperty(dbName, "driver");
         String username = ConfigLoader.getProperty(dbName, "username");
         String password = ConfigLoader.getProperty(dbName, "password");
-        
-        Class.forName(driver);
+       
+        try {
+            Class.forName(driver);
+        } catch (ClassNotFoundException e) {
+            System.err.println("Unable to load driver: " + driver);
+            System.exit(1);
+        }
 
 
         if (username != null && password != null) {
@@ -30,7 +35,7 @@ public class DatabaseConnectionManager {
         }
     }
 
-    public Connection getConnection() throws SQLException, ClassNotFoundException {
+    public Connection getConnection() throws SQLException {
         if (connection == null || connection.isClosed()) {
             initializeConnection();
         }
