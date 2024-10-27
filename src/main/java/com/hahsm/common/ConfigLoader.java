@@ -1,4 +1,4 @@
-package com.hahsm.common.util;
+package com.hahsm.common;
 
 import java.io.IOException;
 import java.io.InputStream;
