@@ -7,12 +7,12 @@ import java.util.Properties;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
-public class SqliteDBConnection implements DatabaseConnection {
+public class SqliteDBConnectionManager implements DatabaseConnectionManager {
 
-    private static SqliteDBConnection uniqueInstance;
+    private static SqliteDBConnectionManager uniqueInstance;
     private Connection connection;
 
-    private SqliteDBConnection() {
+    private SqliteDBConnectionManager() {
         Properties props = new Properties();
         try (InputStream input = getClass().getClassLoader().getResourceAsStream("config.properties")) {
             if (input == null) {
@@ -35,9 +35,9 @@ public class SqliteDBConnection implements DatabaseConnection {
         return connection;
     }
 
-    public static SqliteDBConnection getInstance() {
+    public static SqliteDBConnectionManager getInstance() {
         if (uniqueInstance == null) {
-            uniqueInstance = new SqliteDBConnection();
+            uniqueInstance = new SqliteDBConnectionManager();
         }
         return uniqueInstance;
     }

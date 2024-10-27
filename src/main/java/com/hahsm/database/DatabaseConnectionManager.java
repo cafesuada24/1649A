@@ -2,6 +2,6 @@ package com.hahsm.database;
 
 import java.sql.Connection;
 
-public interface DatabaseConnection {
+public interface DatabaseConnectionManager {
     public Connection getConnection();
 }
