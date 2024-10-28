@@ -17,26 +17,25 @@ public class BookRepository implements Repository<Book, Integer> {
         this.connectionManager = connectionManager;
     }
 
-	@Override
-	public List<Book> getAll() {
+    @Override
+    public List<Book> getAll() {
         String sql = "SELECT " +
-            DatabaseConstants.BookColumns.ID + ',' +
-            DatabaseConstants.BookColumns.TITLE + ',' +
-            DatabaseConstants.BookColumns.AUTHOR +
-            " FROM " + DatabaseConstants.BOOK_TABLE;
+                DatabaseConstants.BookColumns.ID + ',' +
+                DatabaseConstants.BookColumns.TITLE + ',' +
+                DatabaseConstants.BookColumns.AUTHOR +
+                " FROM " + DatabaseConstants.BOOK_TABLE;
 
-        java.util.List<Book> queryResult = new ArrayList<Book>(); 
+        java.util.List<Book> queryResult = new ArrayList<Book>();
 
         try (var conn = connectionManager.getConnection()) {
-            var stmt = conn.createStatement();           
+            var stmt = conn.createStatement();
             var result = stmt.executeQuery(sql);
-            
+
             while (result.next()) {
                 queryResult.add(new Book(
-                    result.getInt(DatabaseConstants.BookColumns.ID),
-                    result.getString(DatabaseConstants.BookColumns.TITLE),
-                    result.getString(DatabaseConstants.BookColumns.AUTHOR)
-                )); 
+                        result.getInt(DatabaseConstants.BookColumns.ID),
+                        result.getString(DatabaseConstants.BookColumns.TITLE),
+                        result.getString(DatabaseConstants.BookColumns.AUTHOR)));
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -46,30 +45,28 @@ public class BookRepository implements Repository<Book, Integer> {
         }
 
         return queryResult;
-	}
+    }
 
-	@Override
-	public Optional<Book> getByID(Integer id) {
+    @Override
+    public Optional<Book> getByID(Integer id) {
         String sql = "SELECT " +
-            DatabaseConstants.BookColumns.ID + ',' +
-            DatabaseConstants.BookColumns.TITLE + ',' +
-            DatabaseConstants.BookColumns.AUTHOR +
-            " FROM " + DatabaseConstants.BOOK_TABLE +
-            " WHERE " + DatabaseConstants.BookColumns.ID + " = ?";
-
+                DatabaseConstants.BookColumns.ID + ',' +
+                DatabaseConstants.BookColumns.TITLE + ',' +
+                DatabaseConstants.BookColumns.AUTHOR +
+                " FROM " + DatabaseConstants.BOOK_TABLE +
+                " WHERE " + DatabaseConstants.BookColumns.ID + " = ?";
 
         try (var conn = connectionManager.getConnection();
-            var pstmt = conn.prepareStatement(sql)) {
-            
+                var pstmt = conn.prepareStatement(sql)) {
+
             pstmt.setInt(1, id);
 
             var result = pstmt.executeQuery();
             if (result.next()) {
                 return Optional.of(new Book(
-                    result.getInt(DatabaseConstants.BookColumns.ID),
-                    result.getString(DatabaseConstants.BookColumns.TITLE),
-                    result.getString(DatabaseConstants.BookColumns.AUTHOR)
-                )); 
+                        result.getInt(DatabaseConstants.BookColumns.ID),
+                        result.getString(DatabaseConstants.BookColumns.TITLE),
+                        result.getString(DatabaseConstants.BookColumns.AUTHOR)));
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -80,20 +77,20 @@ public class BookRepository implements Repository<Book, Integer> {
 
         return Optional.empty();
 
-	}
+    }
 
-	@Override
-	public boolean update(Book entity) {
+    @Override
+    public boolean update(Book entity) {
         String sql = "UPDATE " + DatabaseConstants.BOOK_TABLE + " SET " +
-            DatabaseConstants.BookColumns.TITLE + " = ?," + 
-            DatabaseConstants.BookColumns.AUTHOR + " = ?," +
-            " WHERE " + DatabaseConstants.BookColumns.ID + " = ?;";
+                DatabaseConstants.BookColumns.TITLE + " = ?," +
+                DatabaseConstants.BookColumns.AUTHOR + " = ?," +
+                " WHERE " + DatabaseConstants.BookColumns.ID + " = ?;";
 
         try (var conn = connectionManager.getConnection();
                 var pstmt = conn.prepareStatement(sql)) {
             pstmt.setString(1, entity.getTitle());
             pstmt.setString(2, entity.getAuthor());
-            pstmt.setInt(3, entity.getID()); 
+            pstmt.setInt(3, entity.getID());
 
             int updatedRows = pstmt.executeUpdate();
             return updatedRows == 1;
@@ -103,23 +100,23 @@ public class BookRepository implements Repository<Book, Integer> {
         } finally {
             connectionManager.closeConnection();
         }
-	}
+    }
 
-	@Override
-	public boolean delete(Book entity) {
+    @Override
+    public boolean delete(Book entity) {
         return deleteByID(entity.getID());
-	}
+    }
 
-	@Override
-	public boolean deleteByID(Integer id) {
+    @Override
+    public boolean deleteByID(Integer id) {
         String sql = "DELETE FROM " + DatabaseConstants.BOOK_TABLE
-            + " WHERE " + DatabaseConstants.BookColumns.ID + " = ?";
+                + " WHERE " + DatabaseConstants.BookColumns.ID + " = ?";
 
         try (var conn = connectionManager.getConnection();
-            var pstmt = conn.prepareStatement(sql)) {
-            
+                var pstmt = conn.prepareStatement(sql)) {
+
             pstmt.setInt(1, id);
-            
+
             int rowsDeleted = pstmt.executeUpdate();
             return rowsDeleted == 1;
         } catch (SQLException e) {
@@ -130,5 +127,39 @@ public class BookRepository implements Repository<Book, Integer> {
         }
 
         return false;
-	}
+    }
+
+    @Override
+    public Book insert(Book newEntity) {
+        String sql = "INSERT INTO " + DatabaseConstants.BOOK_TABLE + '(' +
+            DatabaseConstants.BookColumns.TITLE + ',' + 
+            DatabaseConstants.BookColumns.AUTHOR + ')' +
+            " VALUES(?,?);";
+
+            try (var conn = connectionManager.getConnection();
+                var pstmt = conn.prepareStatement(sql)) {
+                
+                pstmt.setString(1, newEntity.getTitle());
+                pstmt.setString(2, newEntity.getAuthor());
+                
+                int affectedRows = pstmt.executeUpdate();
+
+                if (affectedRows == 0) {
+                    throw new SQLException("Unable to insert book");    
+                }
+
+                try (var generatedKeys = pstmt.getGeneratedKeys()) {
+                    if (generatedKeys.next()) {
+                        int id = generatedKeys.getInt(1);
+                        newEntity.setID(id);
+                    }
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+                System.exit(1);
+            } finally {
+                connectionManager.closeConnection();
+            }
+            return newEntity;
+    }
 }
