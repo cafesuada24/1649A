@@ -15,10 +15,10 @@ public class DatabaseConnectionManager {
     }
 
     public void initializeConnection() throws SQLException {
-        String url = ConfigLoader.getProperty(dbName, "url");
-        String driver = ConfigLoader.getProperty(dbName, "driver");
-        String username = ConfigLoader.getProperty(dbName, "username");
-        String password = ConfigLoader.getProperty(dbName, "password");
+        String url = ConfigLoader.getProperty(dbName + ".url");
+        String driver = ConfigLoader.getProperty(dbName + ".driver");
+        String username = ConfigLoader.getProperty(dbName + ".username");
+        String password = ConfigLoader.getProperty(dbName + ".password");
        
         try {
             Class.forName(driver);
