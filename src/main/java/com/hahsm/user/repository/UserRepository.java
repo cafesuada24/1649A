@@ -11,6 +11,9 @@ import com.hahsm.database.DatabaseConnectionManager;
 import com.hahsm.user.model.User;
 
 public class UserRepository implements Repository<User, Integer> {
+    /**
+     *
+     */
     private final DatabaseConnectionManager connectionManager;
 
     public UserRepository(DatabaseConnectionManager connectionManager) {
@@ -130,6 +133,40 @@ public class UserRepository implements Repository<User, Integer> {
         }
 
         return false;
+	}
+
+	@Override
+	public User insert(User newEntity) {
+        String sql = "INSERT INTO " + DatabaseConstants.USER_TABLE + '(' +
+            DatabaseConstants.UserColumns.NAME + ',' + 
+            DatabaseConstants.UserColumns.ADDRESS + ')' +
+            " VALUES(?,?);";
+
+            try (var conn = connectionManager.getConnection();
+                var pstmt = conn.prepareStatement(sql)) {
+                
+                pstmt.setString(1, newEntity.getName());
+                pstmt.setString(2, newEntity.getAddress());
+                
+                int affectedRows = pstmt.executeUpdate();
+
+                if (affectedRows == 0) {
+                    throw new SQLException("Unable to insert user");    
+                }
+
+                try (var generatedKeys = pstmt.getGeneratedKeys()) {
+                    if (generatedKeys.next()) {
+                        int id = generatedKeys.getInt(1);
+                        newEntity.setID(id);
+                    }
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+                System.exit(1);
+            } finally {
+                connectionManager.closeConnection();
+            }
+            return newEntity;
 	}
 }
 
