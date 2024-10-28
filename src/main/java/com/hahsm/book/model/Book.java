@@ -7,10 +7,15 @@ public class Book {
 
     public Book() {}
 
+    public Book(String title, String author) {
+        setTitle(title);
+        setAuthor(author);
+    }
+
     public Book(int id, String title, String author) {
-        this.setID(id);
-        this.setTitle(title);
-        this.setAuthor(author);
+        setID(id);
+        setTitle(title);
+        setAuthor(author);
     }
 
     public int getID() {

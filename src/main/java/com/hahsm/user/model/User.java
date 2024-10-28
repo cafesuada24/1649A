@@ -7,6 +7,11 @@ public class User {
 
     public User() {}
 
+    public User(String name, String address) {
+        setName(name);
+        setAddress(address);
+    }
+
     public User(int id, String name, String address) {
         setID(id);
         setName(name);
