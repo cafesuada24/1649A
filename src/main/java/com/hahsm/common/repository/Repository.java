@@ -9,6 +9,8 @@ public interface Repository<ModelType, IDType> {
 
    public boolean update(ModelType entity);
 
+   public boolean insert(ModelType newEntity);
+
    public boolean delete(ModelType entity);
    public boolean deleteByID(IDType id);
 
