@@ -16,23 +16,23 @@ public class UserRepository implements Repository<User, Integer> {
      */
     private final DatabaseConnectionManager connectionManager;
 
-    public UserRepository(DatabaseConnectionManager connectionManager) {
+    public UserRepository(final DatabaseConnectionManager connectionManager) {
         this.connectionManager = connectionManager;
     }
 
 	@Override
 	public List<User> getAll() {
-        String sql = "SELECT " +
+        final String sql = "SELECT " +
             DatabaseConstants.UserColumns.ID + ',' +
             DatabaseConstants.UserColumns.NAME + ',' +
             DatabaseConstants.UserColumns.ADDRESS +
             " FROM " + DatabaseConstants.USER_TABLE;
 
-        List<User> queryResult = new ArrayList<User>(); 
+        final List<User> queryResult = new ArrayList<User>(); 
 
         try (var conn = connectionManager.getConnection()) {
-            var stmt = conn.createStatement();           
-            var result = stmt.executeQuery(sql);
+            final var stmt = conn.createStatement();           
+            final var result = stmt.executeQuery(sql);
             
             while (result.next()) {
                 queryResult.add(new User(
@@ -41,7 +41,7 @@ public class UserRepository implements Repository<User, Integer> {
                     result.getString(DatabaseConstants.UserColumns.ADDRESS)
                 )); 
             }
-        } catch (SQLException e) {
+        } catch (final SQLException e) {
             e.printStackTrace();
             System.exit(1);
         } finally {
@@ -52,8 +52,8 @@ public class UserRepository implements Repository<User, Integer> {
 	}
 
 	@Override
-	public Optional<User> getByID(Integer id) {
-        String sql = "SELECT " +
+	public Optional<User> getByID(final Integer id) {
+        final String sql = "SELECT " +
             DatabaseConstants.UserColumns.ID + ',' +
             DatabaseConstants.UserColumns.NAME + ',' +
             DatabaseConstants.UserColumns.ADDRESS +
@@ -66,7 +66,7 @@ public class UserRepository implements Repository<User, Integer> {
             
             pstmt.setInt(1, id);
 
-            var result = pstmt.executeQuery();
+            final var result = pstmt.executeQuery();
             if (result.next()) {
                 return Optional.of(new User(
                     result.getInt(DatabaseConstants.UserColumns.ID),
@@ -74,7 +74,7 @@ public class UserRepository implements Repository<User, Integer> {
                     result.getString(DatabaseConstants.UserColumns.ADDRESS)
                 )); 
             }
-        } catch (SQLException e) {
+        } catch (final SQLException e) {
             e.printStackTrace();
             System.exit(1);
         } finally {
@@ -86,8 +86,8 @@ public class UserRepository implements Repository<User, Integer> {
 	}
 
 	@Override
-	public boolean update(User entity) {
-        String sql = "UPDATE " + DatabaseConstants.USER_TABLE + " SET " +
+	public boolean update(final User entity) {
+        final String sql = "UPDATE " + DatabaseConstants.USER_TABLE + " SET " +
             DatabaseConstants.UserColumns.NAME + " = ?," + 
             DatabaseConstants.UserColumns.ADDRESS + " = ?," +
             " WHERE " + DatabaseConstants.UserColumns.ID + " = ?;";
@@ -98,9 +98,9 @@ public class UserRepository implements Repository<User, Integer> {
             pstmt.setString(2, entity.getAddress());
             pstmt.setInt(3, entity.getID()); 
 
-            int updatedRows = pstmt.executeUpdate();
+            final int updatedRows = pstmt.executeUpdate();
             return updatedRows == 1;
-        } catch (SQLException e) {
+        } catch (final SQLException e) {
             e.printStackTrace();
             return false;
         } finally {
@@ -109,13 +109,13 @@ public class UserRepository implements Repository<User, Integer> {
 	}
 
 	@Override
-	public boolean delete(User entity) {
+	public boolean delete(final User entity) {
         return deleteByID(entity.getID());
 	}
 
 	@Override
-	public boolean deleteByID(Integer id) {
-        String sql = "DELETE FROM " + DatabaseConstants.USER_TABLE
+	public boolean deleteByID(final Integer id) {
+        final String sql = "DELETE FROM " + DatabaseConstants.USER_TABLE
             + " WHERE " + DatabaseConstants.UserColumns.ID + " = ?";
 
         try (var conn = connectionManager.getConnection();
@@ -123,9 +123,9 @@ public class UserRepository implements Repository<User, Integer> {
             
             pstmt.setInt(1, id);
             
-            int rowsDeleted = pstmt.executeUpdate();
+            final int rowsDeleted = pstmt.executeUpdate();
             return rowsDeleted == 1;
-        } catch (SQLException e) {
+        } catch (final SQLException e) {
             e.printStackTrace();
             System.exit(1);
         } finally {
@@ -136,8 +136,8 @@ public class UserRepository implements Repository<User, Integer> {
 	}
 
 	@Override
-	public User insert(User newEntity) {
-        String sql = "INSERT INTO " + DatabaseConstants.USER_TABLE + '(' +
+	public User insert(final User newEntity) {
+        final String sql = "INSERT INTO " + DatabaseConstants.USER_TABLE + '(' +
             DatabaseConstants.UserColumns.NAME + ',' + 
             DatabaseConstants.UserColumns.ADDRESS + ')' +
             " VALUES(?,?);";
@@ -148,7 +148,7 @@ public class UserRepository implements Repository<User, Integer> {
                 pstmt.setString(1, newEntity.getName());
                 pstmt.setString(2, newEntity.getAddress());
                 
-                int affectedRows = pstmt.executeUpdate();
+                final int affectedRows = pstmt.executeUpdate();
 
                 if (affectedRows == 0) {
                     throw new SQLException("Unable to insert user");    
@@ -156,11 +156,11 @@ public class UserRepository implements Repository<User, Integer> {
 
                 try (var generatedKeys = pstmt.getGeneratedKeys()) {
                     if (generatedKeys.next()) {
-                        int id = generatedKeys.getInt(1);
+                        final int id = generatedKeys.getInt(1);
                         newEntity.setID(id);
                     }
                 }
-            } catch (SQLException e) {
+            } catch (final SQLException e) {
                 e.printStackTrace();
                 System.exit(1);
             } finally {
