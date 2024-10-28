@@ -7,8 +7,11 @@ import java.util.List;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import com.hahsm.algorithm.MergeSort;
+import com.hahsm.algorithm.SortStrategy;
+
 public class MergeSortTests {
-    private final SortStrategy<Integer> sorter = new MergeSort<>();
+    private final SortStrategy<Integer> sorter = new MergeSort<Integer>();
 
     @Test
     public void sortEmptyList() {

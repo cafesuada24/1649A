@@ -4,9 +4,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import com.hahsm.datastructures.ArrayWrapper;
-import com.hahsm.datastructures.IndexedCollection;
-import com.hahsm.datastructures.ListWrapper;
+import com.hahsm.datastructure.ArrayWrapper;
+import com.hahsm.datastructure.IndexedCollection;
+import com.hahsm.datastructure.ListWrapper;
 
 public class MergeSort<T extends Comparable<T>> implements SortStrategy<T> {
 

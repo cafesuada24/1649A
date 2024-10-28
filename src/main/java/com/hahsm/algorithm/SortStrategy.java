@@ -1,4 +1,4 @@
-package com.hahsm.algorithms;
+package com.hahsm.algorithm;
 
 import java.util.List;
 
