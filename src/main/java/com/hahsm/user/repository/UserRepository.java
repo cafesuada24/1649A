@@ -11,8 +11,6 @@ import com.hahsm.database.DatabaseConnectionManager;
 import com.hahsm.user.model.User;
 
 public class UserRepository implements Repository<User, Integer> {
-    public static final String TABLE_NAME = "users";
-
     private final DatabaseConnectionManager connectionManager;
 
     public UserRepository(DatabaseConnectionManager connectionManager) {
