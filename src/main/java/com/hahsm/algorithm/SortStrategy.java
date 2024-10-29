@@ -1,10 +1,8 @@
 package com.hahsm.algorithm;
 
-import java.util.List;
+import com.hahsm.datastructure.adt.List;
 
 public interface SortStrategy<T extends Comparable<T>> {
 
     public void sort(List<T> data);
-
-    public void sort(T[] data);
 }
