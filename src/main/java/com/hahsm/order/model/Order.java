@@ -12,6 +12,18 @@ public class Order {
 
     public Order() {}
 
+    public Order(int userId, int bookId, LocalDateTime createdAt) {
+        setUserId(userId);
+        setBookId(bookId);
+        setCreatedAt(createdAt);
+    }
+
+    public Order(int userId, int bookId, String createdAt) {
+        setUserId(userId);
+        setBookId(bookId);
+        setCreatedAt(LocalDateTime.parse(createdAt));
+    }
+
     public Pair<Integer, Integer> getID() {
         return new Pair<>(userId, bookId);
     }
