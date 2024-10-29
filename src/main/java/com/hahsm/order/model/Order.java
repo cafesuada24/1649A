@@ -1,6 +1,7 @@
 package com.hahsm.order.model;
 
-import java.time.LocalDateTime;
+import java.sql.Date;
+import java.sql.Time;
 
 import com.hahsm.common.type.Pair;
 
@@ -8,20 +9,19 @@ import com.hahsm.common.type.Pair;
 public class Order {
     private int userId;
     private int bookId;
-    private LocalDateTime createdAt;
+    private int quantity;
+    private Date orderDate;
+    private Time orderTime;
 
-    public Order() {}
 
-    public Order(int userId, int bookId, LocalDateTime createdAt) {
+	public Order() {}
+
+    public Order(int userId, int bookId, int quantity, Date orderDate, Time orderTime) {
         setUserId(userId);
         setBookId(bookId);
-        setCreatedAt(createdAt);
-    }
-
-    public Order(int userId, int bookId, String createdAt) {
-        setUserId(userId);
-        setBookId(bookId);
-        setCreatedAt(LocalDateTime.parse(createdAt));
+        setQuantity(quantity);
+        setOrderDate(orderDate);
+        setOrderTime(orderTime);
     }
 
     public Pair<Integer, Integer> getID() {
@@ -54,11 +54,27 @@ public class Order {
 		this.bookId = bookId;
 	}
 
-	public LocalDateTime getCreatedAt() {
-		return createdAt;
+    public int getQuantity() {
+		return quantity;
 	}
 
-	public void setCreatedAt(LocalDateTime createdAt) {
-		this.createdAt = createdAt;
+	public void setQuantity(int quantity) {
+		this.quantity = quantity;
+	}
+
+	public Date getOrderDate() {
+		return orderDate;
+	}
+
+	public void setOrderDate(Date orderDate) {
+		this.orderDate = orderDate;
+	}
+
+	public Time getOrderTime() {
+		return orderTime;
+	}
+
+	public void setOrderTime(Time orderTime) {
+		this.orderTime = orderTime;
 	}
 }
