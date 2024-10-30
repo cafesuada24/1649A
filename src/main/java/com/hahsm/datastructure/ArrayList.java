@@ -7,12 +7,13 @@ public class ArrayList<T> implements List<T> {
 
     private static final double SHRINK_RATIO = 0.5;
     private static final int GROW_RATIO = 2;
-    public static Object[] copyOf(Object array[], int newSize) {
-        assert array.length <= newSize;
 
-        Object resizedArray[] = new Object[newSize]; 
+    public static Object[] copyOf(final Object array[], final int newSize) {
+        final Object resizedArray[] = new Object[newSize]; 
 
-        for (int i = 0; i < array.length; ++i) {
+        final int size = Math.min(array.length, newSize); 
+
+        for (int i = 0; i < size; ++i) {
             resizedArray[i] = array[i];
         }
 
@@ -21,34 +22,40 @@ public class ArrayList<T> implements List<T> {
 
 
     private int size = 0;
-    private int capacity = DEFAULT_CAPACITY;
-    private Object elements[];
+    private T elements[];
 
     public ArrayList() {
        this(DEFAULT_CAPACITY); 
     }
 
-    public ArrayList(int capacity) {
-        elements = new Object[capacity];
-        this.capacity = capacity;
+    public ArrayList(final int capacity) {
+        elements = (T[]) (new Object[capacity]);
     }
 
-    public ArrayList(List<T> data) {
-        this.capacity = data.size();
-        elements = new Object[this.capacity];
-        for (int i = 0; i < this.capacity; ++i) {
+    public ArrayList(final List<T> data) {
+        size = data.size();
+        elements = (T[]) (new Object[size]);
+        for (int i = 0; i < size; ++i) {
             elements[i] = data.get(i);
         }
     }
 
+    public ArrayList(final T[] data) {
+        size = data.length;
+        elements = (T[]) new Object[size];
+        for (int i = 0; i < size; ++i) {
+            elements[i] = data[i];
+        }
+    }
+
 	@Override
-	public void add(T value) {
+	public void add(final T value) {
         ensureCapacity();
         elements[size++] = value;
 	}
 
 	@Override
-	public void remove(Object o) {
+	public void remove(final Object o) {
 		// TODO Auto-generated method stub
 		throw new UnsupportedOperationException("Unimplemented method 'remove'");
 	}
@@ -64,7 +71,7 @@ public class ArrayList<T> implements List<T> {
 	}
 
 	@Override
-	public void add(int index, T element) {
+	public void add(final int index, final T element) {
         if (index < 0 || index >= size) {
             throw new IndexOutOfBoundsException("Index: " + index + ", Size" + size);
         }
@@ -82,37 +89,35 @@ public class ArrayList<T> implements List<T> {
 		throw new UnsupportedOperationException("Unimplemented method 'sort'");
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
-	public T get(int index) {
+	public T get(final int index) {
         if (index < 0 || index >= size) {
             throw new IndexOutOfBoundsException("Index: " + index + ", Size" + size);
         }
-        return (T) elements[index];
+        return elements[index];
 	}
 
     @Override
-	public T set(int index, T element) {
+	public T set(final int index, final T element) {
         if (index < 0 || index >= size) {
             throw new IndexOutOfBoundsException("Index: " + index + ", Size" + size);
         }
-        @SuppressWarnings("unchecked")
-		final T old = (T)elements[index];
+        final T old = elements[index];
         elements[index] = element;
         return old;
 	}
 
 	private void ensureCapacity() {
         double ratio = 1;
-        if (capacity == size) {
+        if (elements.length == size) {
             ratio = GROW_RATIO;
-        } else if (size * 3 <= capacity) {
+        } else if (size * 3 <= elements.length) {
             ratio = SHRINK_RATIO;
         } else {
             return;
         }
 
-        int newSize = (int)(capacity * ratio);
-        elements = ArrayList.copyOf(elements, newSize);
+        final int newSize = (int)Math.ceil((elements.length * ratio));
+        elements = (T[]) ArrayList.copyOf(elements, newSize);
     }
 }
