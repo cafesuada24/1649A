@@ -1,7 +1,8 @@
 package com.hahsm.common.repository;
 
-import java.util.List;
 import java.util.Optional;
+
+import com.hahsm.datastructure.adt.List;
 
 public interface Repository<ModelType, IDType> {
    public List<ModelType> getAll(); 

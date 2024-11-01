@@ -2,6 +2,15 @@ package com.hahsm.datastructure.adt;
 
 public interface Deque<E> extends Queue<E> {
     void addFirst(E element);
-    void addLast(E element);
-    E back();
+    E removeFirst();
+
+    default void addLast(E element) {
+        add(element);    
+    }
+
+    default E removeLast() {
+        return remove();
+    }
+
+    abstract E back();
 }

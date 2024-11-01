@@ -1,10 +1,11 @@
 package com.hahsm.book.repository;
 
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 
+
+import com.hahsm.datastructure.adt.List;
+import com.hahsm.datastructure.ArrayList;
 import com.hahsm.book.model.Book;
 import com.hahsm.common.database.DatabaseConstants;
 import com.hahsm.common.repository.Repository;
@@ -25,7 +26,7 @@ public class BookRepository implements Repository<Book, Integer> {
                 DatabaseConstants.BookColumns.AUTHOR +
                 " FROM " + DatabaseConstants.BOOK_TABLE;
 
-        java.util.List<Book> queryResult = new ArrayList<Book>();
+        List<Book> queryResult = new ArrayList<Book>();
 
         try (var conn = connectionManager.getConnection()) {
             var stmt = conn.createStatement();
