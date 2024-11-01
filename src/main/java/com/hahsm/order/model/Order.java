@@ -6,13 +6,13 @@ import java.sql.Time;
 import com.hahsm.common.type.Pair;
 
 
-public class Order {
+public class Order implements Comparable<Order> {
+
     private int userId;
     private int bookId;
     private int quantity;
     private Date orderDate;
     private Time orderTime;
-
 
 	public Order() {}
 
@@ -76,5 +76,22 @@ public class Order {
 
 	public void setOrderTime(Time orderTime) {
 		this.orderTime = orderTime;
+	}
+
+	@Override
+	public int compareTo(Order o) {
+        if (getOrderDate().before(o.getOrderDate())) {
+            return -1;
+        } else if (getOrderDate().after(o.getOrderDate())) {
+            return 1;
+        }
+
+        if (getOrderTime().before(o.getOrderTime())) {
+            return -1;
+        } else if (getOrderTime().after(o.getOrderTime())) {
+            return 1;
+        }
+
+        return 0;
 	}
 }

@@ -1,11 +1,13 @@
 package com.hahsm.book.model;
 
-public class Book {
+public class Book implements Comparable<Book> {
     private int id;
+    private int year;
     private String title;
     private String author;
 
-    public Book() {}
+    public Book() {
+    }
 
     public Book(String title, String author) {
         setTitle(title);
@@ -19,7 +21,7 @@ public class Book {
     }
 
     public int getID() {
-        return this.id;     
+        return this.id;
     }
 
     public void setID(int id) {
@@ -29,6 +31,7 @@ public class Book {
     public String getTitle() {
         return this.title;
     }
+
     public void setTitle(String title) {
         this.title = title;
     }
@@ -39,5 +42,37 @@ public class Book {
 
     public void setAuthor(String author) {
         this.author = author;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public int getYear() {
+        return year;
+    }
+
+    public void setYear(int year) {
+        this.year = year;
+    }
+
+    @Override
+    public int compareTo(Book o) { 
+        if (getYear() < o.getYear()) {
+            return -1;
+        } else if (getYear() > o.getYear()) {
+            return 1;
+        }
+
+        int compare = getAuthor().compareTo(o.getAuthor());
+        if (compare != 0) {
+            return compare;
+        }
+
+        return getTitle().compareTo(o.getTitle());
     }
 }
