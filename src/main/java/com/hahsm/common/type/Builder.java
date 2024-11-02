@@ -1,4 +1,4 @@
-package com.hahsm.common.builder;
+package com.hahsm.common.type;
 
 public interface Builder<T> {
     void reset();

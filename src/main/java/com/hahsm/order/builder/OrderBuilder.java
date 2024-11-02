@@ -3,7 +3,7 @@ package com.hahsm.order.builder;
 import java.sql.Date;
 import java.sql.Time;
 
-import com.hahsm.common.builder.Builder;
+import com.hahsm.common.type.Builder;
 import com.hahsm.datastructure.adt.List;
 import com.hahsm.order.model.Order;
 import com.hahsm.order.model.OrderBook;
