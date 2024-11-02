@@ -120,4 +120,11 @@ public class ArrayList<T> implements List<T> {
         final int newSize = (int)Math.ceil((elements.length * ratio));
         elements = (T[]) ArrayList.copyOf(elements, newSize);
     }
+
+	@Override
+	public void add(List<T> newElements) {
+        for (int i = 0; i < newElements.size(); ++i) {
+            add(newElements.get(i));
+        }
+	}
 }
