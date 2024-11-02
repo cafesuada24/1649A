@@ -3,83 +3,64 @@ package com.hahsm.order.model;
 import java.sql.Date;
 import java.sql.Time;
 
-import com.hahsm.common.type.Pair;
-
+import com.hahsm.datastructure.adt.List;
+import com.hahsm.datastructure.ArrayList;
 
 public class Order implements Comparable<Order> {
-
+    private int id;
     private int userId;
-    private int bookId;
-    private int quantity;
     private Date orderDate;
     private Time orderTime;
 
-	public Order() {}
+    private List<OrderBook> orderBooks;
 
-    public Order(int userId, int bookId, int quantity, Date orderDate, Time orderTime) {
-        setUserId(userId);
-        setBookId(bookId);
-        setQuantity(quantity);
+    public Order() {
+        this.orderBooks = new ArrayList<>();
+    }
+
+    public Order(int id, int userid, Date orderDate, Time orderTime, List<OrderBook> orderBooks) {
+        setId(id);
+        setUserId(userid);
         setOrderDate(orderDate);
         setOrderTime(orderTime);
+        this.orderBooks = orderBooks;
     }
 
-    public Pair<Integer, Integer> getID() {
-        return new Pair<>(userId, bookId);
+    public int getId() {
+        return id;
     }
 
-    public void setId(Pair<Integer, Integer> key) {
-        setUserId(key.getFirst());
-        setBookId(key.getSecond());
+    public void setId(int id) {
+        this.id = id;
     }
 
-    public void setId(int userId, int bookId) {
-        setUserId(userId);
-        setBookId(bookId);
-    }
-
-	public int getUserId() {
+    public int getUserId() {
         return userId;
-	}
+    }
 
-	public void setUserId(int userId) {
-		this.userId = userId;
-	}
+    public void setUserId(int userId) {
+        this.userId = userId;
+    }
 
-	public int getBookId() {
-		return bookId;
-	}
 
-	public void setBookId(int bookId) {
-		this.bookId = bookId;
-	}
+    public Date getOrderDate() {
+        return orderDate;
+    }
 
-    public int getQuantity() {
-		return quantity;
-	}
+    public void setOrderDate(Date orderDate) {
+        this.orderDate = orderDate;
+    }
 
-	public void setQuantity(int quantity) {
-		this.quantity = quantity;
-	}
+    public Time getOrderTime() {
+        return orderTime;
+    }
 
-	public Date getOrderDate() {
-		return orderDate;
-	}
+    public void setOrderTime(Time orderTime) {
+        this.orderTime = orderTime;
+    }
 
-	public void setOrderDate(Date orderDate) {
-		this.orderDate = orderDate;
-	}
-
-	public Time getOrderTime() {
-		return orderTime;
-	}
-
-	public void setOrderTime(Time orderTime) {
-		this.orderTime = orderTime;
-	}
-
-	@Override
-	public int compareTo(Order o) {
+    @Override
+    public int compareTo(Order o) {
         if (getOrderDate().before(o.getOrderDate())) {
             return -1;
         } else if (getOrderDate().after(o.getOrderDate())) {
@@ -93,5 +74,9 @@ public class Order implements Comparable<Order> {
         }
 
         return 0;
+    }
+
+	public List<OrderBook> getOrderBooks() {
+		return orderBooks;
 	}
 }
