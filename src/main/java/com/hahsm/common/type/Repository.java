@@ -13,6 +13,8 @@ public interface Repository<ModelType, IDType> {
 
     public ModelType insert(ModelType newEntity);
 
+    public List<ModelType> insert(List<ModelType> entities);
+
     public boolean delete(ModelType entity);
 
     public boolean deleteByID(IDType id);
