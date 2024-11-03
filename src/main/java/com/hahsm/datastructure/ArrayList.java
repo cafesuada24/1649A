@@ -127,4 +127,20 @@ public class ArrayList<T> implements List<T> {
             add(newElements.get(i));
         }
 	}
+
+	@Override
+	public T remove(int index) {
+        if (index < 0 || index >= size) {
+            throw new IndexOutOfBoundsException("Index: " + index + ", Size" + size);
+        }
+
+        final T element = elements[index];
+        for (int i = index; i < size - 1; ++i) {
+            elements[i] = elements[i + 1];
+        }
+        elements[--size] = null;
+        ensureCapacity();
+
+        return element;
+	}
 }
