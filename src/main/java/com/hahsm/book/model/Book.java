@@ -9,15 +9,16 @@ public class Book implements Comparable<Book> {
     public Book() {
     }
 
-    public Book(String title, String author) {
+    public Book(String title, String author, int year) {
         setTitle(title);
         setAuthor(author);
+        setYear(year);
     }
 
-    public Book(int id, String title, String author) {
-        setID(id);
-        setTitle(title);
-        setAuthor(author);
+    public Book(int id, String title, String author, int year) {
+        this(title, author, year);
+        this.setID(id);
+        
     }
 
     public int getID() {
@@ -61,7 +62,7 @@ public class Book implements Comparable<Book> {
     }
 
     @Override
-    public int compareTo(Book o) { 
+    public int compareTo(Book o) {
         if (getYear() < o.getYear()) {
             return -1;
         } else if (getYear() > o.getYear()) {
@@ -74,5 +75,11 @@ public class Book implements Comparable<Book> {
         }
 
         return getTitle().compareTo(o.getTitle());
+    }
+
+    @Override
+    public String toString() {
+        return "ID: " + this.getID() + ", title: " + this.getTitle() + ", author: " + this.getAuthor() + " ("
+                + this.getYear() + ")";
     }
 }
