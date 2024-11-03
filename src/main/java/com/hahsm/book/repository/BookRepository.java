@@ -35,7 +35,8 @@ public class BookRepository implements Repository<Book, Integer> {
         String sql = "SELECT " +
                 DatabaseConstants.BookColumns.ID + ',' +
                 DatabaseConstants.BookColumns.TITLE + ',' +
-                DatabaseConstants.BookColumns.AUTHOR +
+                DatabaseConstants.BookColumns.AUTHOR + ',' +
+                DatabaseConstants.BookColumns.YEAR +
                 " FROM " + DatabaseConstants.BOOK_TABLE;
 
         List<Book> queryResult = new ArrayList<Book>();
