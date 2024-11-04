@@ -26,6 +26,9 @@ public class DatabaseConstants {
     public static final class OrderColumns {
         public static final String ID = "id";
         public static final String USER_ID = "user_id";
+        public static final String CUSTOMER_NAME = "customer_name";
+        public static final String CUSTOMER_ADDRESS = "customer_address";
+        public static final String CUSTOMER_PHONE = "customer_phone";
         public static final String ORDER_DATE = "order_date";
         public static final String ORDER_TIME = "order_time";
     }
