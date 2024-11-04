@@ -19,11 +19,11 @@ public class LinearSearch implements Search {
         return searchHelper(data, isEqual);
     }
 
-    @Override
-    public <T> int search(List<T> data, Object target) {
-        Predicate<T> isEqual = x -> x.equals(target);
-        return searchHelper(data, isEqual);
-    }
+    //@Override
+    //public <T> int search(List<T> data, Object target) {
+    //    Predicate<T> isEqual = x -> x.equals(target);
+    //    return searchHelper(data, isEqual);
+    //}
 
     private <T> int searchHelper(List<T> data, Predicate<T> isEqual) {
         for (int i = 0; i < data.size(); ++i) {
