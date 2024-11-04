@@ -176,4 +176,17 @@ public class LinkedList<T> implements Deque<T> {
         }
         return tail.getValue();
     }
+
+	@Override
+	public void clear() {
+        head = null;
+        tail = null;
+        size = 0;
+	}
+
+	@Override
+	public boolean contains(T target) {
+		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException("Unimplemented method 'contains'");
+	}
 }

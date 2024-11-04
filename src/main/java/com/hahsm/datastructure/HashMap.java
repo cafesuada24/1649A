@@ -7,7 +7,7 @@ import com.hahsm.datastructure.adt.Map;
 
 public class HashMap<K, V> implements Map<K, V> {
 
-    public static class Entry<K, V> {
+    public static class Entry<K, V> implements Map.Entry<K, V> {
         private final K key;
         private V value;
         private Entry<K, V> next;
@@ -16,17 +16,22 @@ public class HashMap<K, V> implements Map<K, V> {
             this.key = key;
             this.value = value;
         }
-
+        
+        @Override
         public K getKey() {
             return key;
         }
-
+        
+        @Override
         public V getValue() {
             return value;
         }
-
-        public void setValue(V value) {
+        
+        @Override
+        public V setValue(V value) {
+            final V old = this.value;
             this.value = value;
+            return old;
         }
 
         public Entry<K, V> getNext() {
@@ -35,6 +40,21 @@ public class HashMap<K, V> implements Map<K, V> {
 
         public void setNext(Entry<K, V> next) {
             this.next = next;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (o == null) {
+                return false;
+            }
+
+            if (o.getClass() != this.getClass()) {
+                return false;
+            }
+
+            final Entry<K, V> other = (Entry<K, V>) o;
+            return getKey() == other.getKey() && getValue() == other.getValue();
+            
         }
     }
 
@@ -107,7 +127,7 @@ public class HashMap<K, V> implements Map<K, V> {
             entry = entry.getNext();
         }
 
-        throw new InvalidKeyException("Invalid Key");
+        return null;
     }
 
     @Override
@@ -238,4 +258,20 @@ public class HashMap<K, V> implements Map<K, V> {
         }
         return size() < table.size() * loadFactor / 2;
     }
+
+	@Override
+	public List<com.hahsm.datastructure.adt.Map.Entry<K, V>> entries() {
+        final List<com.hahsm.datastructure.adt.Map.Entry<K, V>> entries = new ArrayList<>(size());
+
+        for (int i = 0; i < capacity; ++i) {
+            Entry<K, V> entry = table.get(i);
+
+            while (entry != null) {
+                entries.add(entry);
+                entry = entry.getNext();
+            }
+        }
+
+        return entries;
+	}
 }

@@ -25,49 +25,52 @@ public class PriorityQueue<T> implements Queue<T> {
         queueList = new ArrayList<>(capacity);
     }
 
-	@Override
-	public void add(T value) {
+    @Override
+    public void add(T value) {
         queueList.add(value);
         swim(queueList.size() - 1);
-	}
+    }
 
-
-	@Override
-	public int size() {
+    @Override
+    public int size() {
         return queueList.size();
-	}
+    }
 
-	@Override
-	public boolean isEmpty() {
+    @Override
+    public boolean isEmpty() {
         return queueList.size() == 0;
-	}
+    }
 
-	@Override
-	public T front() throws NoClassDefFoundError {
+    @Override
+    public T front() throws NoClassDefFoundError {
         if (isEmpty()) {
             throw new NoSuchElementException("The queue is empty");
         }
         return queueList.get(0);
-	}
+    }
 
-	@Override
-	public T remove() {
+    @Override
+    public T remove() {
         if (isEmpty()) {
             throw new NoSuchElementException("The queue is empty");
         }
-        
+
         final T front = queueList.get(0);
         Util.swap(queueList, 0, queueList.size() - 1);
         queueList.remove(queueList.size() - 1);
         heapify(0);
 
         return front;
-	}
+    }
+
+    @Override
+    public void clear() {
+        queueList.clear();
+    }
 
     public void setComparator(Comparator<T> comparator) {
         this.comparator = comparator;
-	}
-    
+    }
 
     private void heapify(int i) {
         if (i >= size()) {
@@ -86,7 +89,7 @@ public class PriorityQueue<T> implements Queue<T> {
         }
 
         if (largest != i) {
-            Util.swap(queueList, largest, i);            
+            Util.swap(queueList, largest, i);
             heapify(largest);
         }
     }
@@ -103,9 +106,15 @@ public class PriorityQueue<T> implements Queue<T> {
         swim(parent);
     }
 
+    @Override
+    public boolean remove(Object o) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'remove'");
+    }
+
 	@Override
-	public boolean remove(Object o) {
+	public boolean contains(T target) {
 		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException("Unimplemented method 'remove'");
+		throw new UnsupportedOperationException("Unimplemented method 'contains'");
 	}
 }
