@@ -1,10 +1,13 @@
 package com.hahsm.datastructure;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import com.hahsm.datastructure.adt.List;
+
 import static org.junit.jupiter.api.Assertions.*;
 
-import java.util.HashMap;
-import java.util.Map;
+import com.hahsm.datastructure.adt.Map;
 
 public class HashMapTest {
 
@@ -96,5 +99,30 @@ public class HashMapTest {
 
         // Try to remove a nonexistent key (should return null)
         assertNull(map.remove("Orange"), "Expected null when removing a nonexistent key");
+    }
+
+    @Test
+    public void testEntries() {
+        // Add entries to the map
+        map.put("A", 1);
+        map.put("B", 2);
+        map.put("C", 3);
+
+        // Get all entries as a list
+        List<Map.Entry<String, Integer>> entries = map.entries();
+
+        // Check each entry in the list
+        assertTrue(entries.contains(new HashMap.Entry<>("A", 1)));
+        assertTrue(entries.contains(new HashMap.Entry<>("B", 2)));
+        assertTrue(entries.contains(new HashMap.Entry<>("C", 3)));
+
+        // Verify entries are in expected order (depends on insertion order in recent
+        // Java versions)
+        assertEquals("A", entries.get(0).getKey());
+        assertEquals(1, entries.get(0).getValue());
+        assertEquals("B", entries.get(1).getKey());
+        assertEquals(2, entries.get(1).getValue());
+        assertEquals("C", entries.get(2).getKey());
+        assertEquals(3, entries.get(2).getValue());
     }
 }

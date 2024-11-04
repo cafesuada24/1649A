@@ -4,9 +4,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import com.hahsm.datastructure.adt.List;
 
 public class ArrayListTest {
 
@@ -26,7 +24,7 @@ public class ArrayListTest {
 
     @Test
     public void testAddAllElements() {
-        List<Integer> elements = Arrays.asList(1, 2, 3);
+        List<Integer> elements = new ArrayList<>(1, 2, 3);
         list.addAll(elements);
         assertEquals(3, list.size());
         assertEquals(elements, list);
