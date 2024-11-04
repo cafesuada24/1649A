@@ -1,12 +1,12 @@
 package com.hahsm.datastructure;
 
+import java.util.Comparator;
+
 import com.hahsm.datastructure.adt.List;
 
 public class ArrayList<T> implements List<T> {
-    private static final int DEFAULT_CAPACITY = 10;
-
-    private static final double SHRINK_RATIO = 0.5;
-    private static final int GROW_RATIO = 2;
+    private static final int DEFAULT_MIN_CAPACITY = 10;
+    private static final float DEFAULT_LOAD_FACTOR = 0.75f;
 
     public static Object[] copyOf(final Object array[], final int newSize) {
         final Object resizedArray[] = new Object[newSize]; 
@@ -23,26 +23,44 @@ public class ArrayList<T> implements List<T> {
 
     private int size = 0;
     private T elements[];
+    private int minCapacity;
+    private final float loadFactor;
 
     public ArrayList() {
-       this(DEFAULT_CAPACITY); 
+       this(DEFAULT_MIN_CAPACITY, DEFAULT_LOAD_FACTOR); 
     }
 
-    public ArrayList(final int capacity) {
-        elements = (T[]) (new Object[capacity]);
+    public ArrayList(int capacity) {
+        this(capacity, DEFAULT_LOAD_FACTOR);
     }
 
-    public ArrayList(final List<T> data) {
+    //@SuppressWarnings("unchecked")
+	public ArrayList(final int capacity, final float loadFactor) {
+        assert loadFactor > 0 && loadFactor < 1.0;
+        this.loadFactor = loadFactor;
+        this.ensureCapacity(capacity);
+        //elements = (T[]) (new Object[capacity]);
+    }
+
+	public ArrayList(List<T> data) {
+        this.loadFactor = DEFAULT_LOAD_FACTOR;
         size = data.size();
-        elements = (T[]) (new Object[size]);
+        ensureCapacity(size);
+        //elements = (T[]) (new Object[minCapacity]);
+        assert elements != null;
         for (int i = 0; i < size; ++i) {
             elements[i] = data.get(i);
         }
     }
 
-    public ArrayList(final T[] data) {
+    //@SuppressWarnings("unchecked")
+	public ArrayList(T... data) {
+        this.loadFactor = DEFAULT_LOAD_FACTOR;
         size = data.length;
-        elements = (T[]) new Object[size];
+        ensureCapacity(size);
+
+        //elements = (T[]) new Object[minCapacity];
+        assert elements != null;
         for (int i = 0; i < size; ++i) {
             elements[i] = data[i];
         }
@@ -50,12 +68,37 @@ public class ArrayList<T> implements List<T> {
 
 	@Override
 	public void add(final T value) {
-        ensureCapacity();
+        if (isFull()) {
+            sizeUp();
+        }
         elements[size++] = value;
 	}
 
 	@Override
-	public void remove(final Object o) {
+	public void addAll(List<T> newElements) {
+        for (int i = 0; i < newElements.size(); ++i) {
+            add(newElements.get(i));
+        }
+	}
+
+	@Override
+	public void add(final int index, final T element) {
+        if (index < 0 || index >= size) {
+            throw new IndexOutOfBoundsException("Index: " + index + ", Size" + size);
+        }
+        if (isFull()) {
+            sizeUp();
+        }
+        
+        for (int i = size; i > index; --i) {
+            elements[i] = elements[i - 1];
+        }
+        elements[index] = element;
+        ++size;
+	}
+
+	@Override
+	public boolean remove(final Object element) {
 		// TODO Auto-generated method stub
 		throw new UnsupportedOperationException("Unimplemented method 'remove'");
 	}
@@ -70,21 +113,8 @@ public class ArrayList<T> implements List<T> {
         return size == 0;
 	}
 
-	@Override
-	public void add(final int index, final T element) {
-        if (index < 0 || index >= size) {
-            throw new IndexOutOfBoundsException("Index: " + index + ", Size" + size);
-        }
-        ensureCapacity();
-        for (int i = size; i > index; --i) {
-            elements[i] = elements[i - 1];
-        }
-        elements[index] = element;
-        ++size;
-	}
 
-	@Override
-	public void sort() {
+	public void sort(Comparator<? super T> c) {
 		// TODO Auto-generated method stub
 		throw new UnsupportedOperationException("Unimplemented method 'sort'");
 	}
@@ -107,26 +137,6 @@ public class ArrayList<T> implements List<T> {
         return old;
 	}
 
-	private void ensureCapacity() {
-        double ratio = 1;
-        if (elements.length == size) {
-            ratio = GROW_RATIO;
-        } else if (size * 3 <= elements.length) {
-            ratio = SHRINK_RATIO;
-        } else {
-            return;
-        }
-
-        final int newSize = (int)Math.ceil((elements.length * ratio));
-        elements = (T[]) ArrayList.copyOf(elements, newSize);
-    }
-
-	@Override
-	public void add(List<T> newElements) {
-        for (int i = 0; i < newElements.size(); ++i) {
-            add(newElements.get(i));
-        }
-	}
 
 	@Override
 	public T remove(int index) {
@@ -139,8 +149,57 @@ public class ArrayList<T> implements List<T> {
             elements[i] = elements[i + 1];
         }
         elements[--size] = null;
-        ensureCapacity();
+
+        if (isSparse()) {
+            sizeDown();
+        }
 
         return element;
 	}
+
+    public void ensureCapacity(int minCapacity) {
+        this.minCapacity = minCapacity;
+
+        if (elements == null || elements.length < minCapacity) {
+            changeCapacity(minCapacity);
+        }
+    }
+
+    public void resize(int newSize) {
+        if (elements == null || newSize > elements.length) {
+            changeCapacity(newSize);
+        }
+
+        this.size = newSize;
+    }
+    
+	@SuppressWarnings("unchecked")
+	private void changeCapacity(int capacity) {
+        capacity = Math.max(capacity, minCapacity);
+
+        if (elements == null) {
+            elements = (T[]) new Object[capacity];
+        } else {
+            elements = (T[]) ArrayList.copyOf(elements, capacity);
+        }
+    }
+
+    private boolean isFull() {
+        return size() >= (int) (elements.length * loadFactor);
+    }
+
+    private boolean isSparse() {
+        if (size() <= minCapacity) {
+            return false;
+        }
+        return size() < (elements.length * loadFactor / 2);
+    }
+
+    private void sizeUp() {
+        changeCapacity(elements.length << 1);
+    }
+
+    private void sizeDown() {
+        changeCapacity(elements.length >> 1);
+    }
 }

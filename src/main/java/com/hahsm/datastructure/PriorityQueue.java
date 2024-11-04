@@ -31,11 +31,6 @@ public class PriorityQueue<T> implements Queue<T> {
         swim(queueList.size() - 1);
 	}
 
-	@Override
-	public void remove(Object o) {
-		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException("Unimplemented method 'remove'");
-	}
 
 	@Override
 	public int size() {
@@ -107,4 +102,10 @@ public class PriorityQueue<T> implements Queue<T> {
         Util.swap(queueList, parent, i);
         swim(parent);
     }
+
+	@Override
+	public boolean remove(Object o) {
+		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException("Unimplemented method 'remove'");
+	}
 }

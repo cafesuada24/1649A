@@ -112,7 +112,7 @@ public class LinkedList<T> implements Deque<T> {
     }
 
     @Override
-    public void remove(Object o) {
+    public boolean remove(Object o) {
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'remove'");
     }
