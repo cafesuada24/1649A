@@ -1,60 +1,36 @@
 package com.hahsm.algorithm;
 
 import java.util.Comparator;
-import java.util.function.Function;
+import java.util.function.Predicate;
 
-import com.hahsm.datastructure.ArrayList;
 import com.hahsm.datastructure.adt.List;
 
 public class LinearSearch implements Search {
 
     @Override
-    public <E> int search(List<E> data, E target, Comparator<E> comparator) {
-        for (int i = 0; i < data.size(); ++i) {
-            if (comparator.compare(data.get(i), target) == 0) {
-                return i;
-            }
-        }
-        return -1;
+    public <T extends Comparable<T>> int search(List<T> data, T target) {
+        Predicate<T> isEqual = x -> x.compareTo(target) == 0;
+        return searchHelper(data, isEqual);
     }
-
-    
 
     @Override
-    public <T> List<Integer> searchAll(List<T> data, T target, Comparator<T> comparator) {
-        List<Integer> indexes = new ArrayList<Integer>(data.size());
-
-        for (int i = 0; i < data.size(); ++i) {
-            if (comparator.compare(data.get(i), target) == 0) {
-                indexes.add(i);
-            }
-        }
-
-        return indexes;
+    public <T> int search(List<T> data, T target, Comparator<T> comparator) {
+        Predicate<T> isEqual = x -> comparator.compare(x, target) == 0;
+        return searchHelper(data, isEqual);
     }
 
+    @Override
+    public <T> int search(List<T> data, Object target) {
+        Predicate<T> isEqual = x -> x.equals(target);
+        return searchHelper(data, isEqual);
+    }
 
-
-	@Override
-	public <T> int search(List<T> data, Function<T, Integer> func) {
+    private <T> int searchHelper(List<T> data, Predicate<T> isEqual) {
         for (int i = 0; i < data.size(); ++i) {
-            if (func.apply(data.get(i)) == 0) {
+            if (isEqual.test(data.get(i))) {
                 return i;
             }
         }
         return -1;
-	 }
-
-
-
-	@Override
-	public <T> List<Integer> searchAll(List<T> data, Function<T, Integer> func) {
-        List<Integer> indexes = new ArrayList<>(data.size());
-        for (int i = 0; i < data.size(); ++i) {
-            if (func.apply(data.get(i)) == 0) {
-                indexes.add(i);
-            }
-        }
-        return indexes;
-	}
+    }
 }
