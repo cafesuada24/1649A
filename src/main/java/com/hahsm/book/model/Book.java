@@ -18,7 +18,7 @@ public class Book implements Comparable<Book> {
     public Book(int id, String title, String author, int year) {
         this(title, author, year);
         this.setID(id);
-        
+
     }
 
     public int getID() {
@@ -39,6 +39,7 @@ public class Book implements Comparable<Book> {
 
     public String getAuthor() {
         return this.author;
+
     }
 
     public void setAuthor(String author) {

@@ -1,13 +1,12 @@
 package com.hahsm.book.repository;
 
-import java.sql.SQLException;
-import java.util.HashMap;
-import java.util.Optional;
-import java.util.function.Function;
 
+import java.sql.SQLException;
+import java.util.Optional;
+
+import com.hahsm.datastructure.HashMap;
 import com.hahsm.datastructure.adt.List;
 import com.hahsm.datastructure.ArrayList;
-import com.hahsm.algorithm.Search;
 import com.hahsm.book.model.Book;
 import com.hahsm.common.database.DatabaseConstants;
 import com.hahsm.common.type.Repository;
@@ -16,22 +15,16 @@ import com.hahsm.database.DatabaseConnectionManager;
 public class BookRepository implements Repository<Book, Integer> {
     private final DatabaseConnectionManager connectionManager;
     private HashMap<Integer, Book> books;
-    //private Search searcher;
+    // private Search searcher;
 
     public BookRepository(DatabaseConnectionManager connectionManager) {
         this.connectionManager = connectionManager;
-        
+
         load();
     }
 
     @Override
     public List<Book> getAll() {
-        //if (books != null) {
-        //    return books.values();
-        //}
-
-        //assert books != null;
-
         String sql = "SELECT " +
                 DatabaseConstants.BookColumns.ID + ',' +
                 DatabaseConstants.BookColumns.TITLE + ',' +
@@ -71,7 +64,6 @@ public class BookRepository implements Repository<Book, Integer> {
         }
 
         return Optional.of(books.get(id));
-
     }
 
     @Override
@@ -165,12 +157,6 @@ public class BookRepository implements Repository<Book, Integer> {
         return newEntity;
     }
 
-    @Override
-    public void loadEntity(Book entity) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'loadEntity'");
-    }
-
     private void load() {
         if (books != null) {
             return;
@@ -186,9 +172,9 @@ public class BookRepository implements Repository<Book, Integer> {
         }
     }
 
-	@Override
-	public List<Book> insert(List<Book> entities) {
-		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException("Unimplemented method 'insert'");
-	}
+    @Override
+    public List<Book> insert(List<Book> entities) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'insert'");
+    }
 }

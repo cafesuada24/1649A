@@ -8,9 +8,12 @@ import com.hahsm.datastructure.ArrayList;
 
 public class Order implements Comparable<Order> {
     private int id;
-    private int userId;
+    private int userId = 0;
     private Date orderDate;
     private Time orderTime;
+    private String customerName;
+    private String customerAddress;
+    private String customerPhone;
 
     private List<OrderBook> orderBooks;
 
@@ -18,15 +21,22 @@ public class Order implements Comparable<Order> {
         this.orderBooks = new ArrayList<>();
     }
 
-    public Order(int id, int userid, Date orderDate, Time orderTime, List<OrderBook> orderBooks) {
+    public Order(int id, int userId, Date orderDate, Time orderTime, String customerName, String customerAddress, String customerPhone) {
+        this(id, userId, orderDate, orderTime, customerName, customerAddress, customerPhone, new ArrayList<>());
+    }
+
+    public Order(int id, int userId, Date orderDate, Time orderTime, String customerName, String customerAddress, String customerPhone, List<OrderBook> orderBooks) {
         setId(id);
-        setUserId(userid);
+        setUserId(userId);
         setOrderDate(orderDate);
         setOrderTime(orderTime);
+        setCustomerName(customerName);
+        setCustomerAddress(customerAddress);
+        setCustomerPhone(customerPhone);
         this.orderBooks = orderBooks;
     }
 
-    public int getId() {
+	public int getId() {
         return id;
     }
 
@@ -59,6 +69,10 @@ public class Order implements Comparable<Order> {
         this.orderTime = orderTime;
     }
 
+	public List<OrderBook> getOrderBooks() {
+		return orderBooks;
+	}
+
     @Override
     public int compareTo(Order o) {
         if (getOrderDate().before(o.getOrderDate())) {
@@ -76,7 +90,27 @@ public class Order implements Comparable<Order> {
         return 0;
     }
 
-	public List<OrderBook> getOrderBooks() {
-		return orderBooks;
+	public String getCustomerName() {
+		return customerName;
+	}
+
+	public void setCustomerName(String cutstomerName) {
+		this.customerName = cutstomerName;
+	}
+
+	public String getCustomerAddress() {
+		return customerAddress;
+	}
+
+	public void setCustomerAddress(String cutstomerAddress) {
+		this.customerAddress = cutstomerAddress;
+	}
+
+	public String getCustomerPhone() {
+		return customerPhone;
+	}
+
+	public void setCustomerPhone(String cutstomerPhone) {
+		this.customerPhone = cutstomerPhone;
 	}
 }

@@ -18,6 +18,4 @@ public interface Repository<ModelType, IDType> {
     public boolean delete(ModelType entity);
 
     public boolean deleteByID(IDType id);
-
-    public void loadEntity(ModelType entity);
 }

@@ -1,5 +1,7 @@
 package com.hahsm.datastructure;
 
+import java.util.function.BiConsumer;
+
 import javax.management.openmbean.InvalidKeyException;
 
 import com.hahsm.datastructure.adt.List;
@@ -16,17 +18,17 @@ public class HashMap<K, V> implements Map<K, V> {
             this.key = key;
             this.value = value;
         }
-        
+
         @Override
         public K getKey() {
             return key;
         }
-        
+
         @Override
         public V getValue() {
             return value;
         }
-        
+
         @Override
         public V setValue(V value) {
             final V old = this.value;
@@ -54,7 +56,7 @@ public class HashMap<K, V> implements Map<K, V> {
 
             final Entry<K, V> other = (Entry<K, V>) o;
             return getKey() == other.getKey() && getValue() == other.getValue();
-            
+
         }
     }
 
@@ -78,7 +80,7 @@ public class HashMap<K, V> implements Map<K, V> {
         this.loadFactor = loadFactor;
         this.table = new ArrayList<>(capacity, loadFactor);
         this.table.resize(capacity);
-         size = 0;
+        size = 0;
     }
 
     @Override
@@ -259,19 +261,42 @@ public class HashMap<K, V> implements Map<K, V> {
         return size() < table.size() * loadFactor / 2;
     }
 
-	@Override
-	public List<com.hahsm.datastructure.adt.Map.Entry<K, V>> entries() {
+    @Override
+    public List<com.hahsm.datastructure.adt.Map.Entry<K, V>> entries() {
         final List<com.hahsm.datastructure.adt.Map.Entry<K, V>> entries = new ArrayList<>(size());
 
+        forEach((k, v) -> entries.add(new Entry<>(k, v)));
+
+        return entries;
+    }
+
+    @Override
+    public List<V> values() {
+        final List<V> values = new ArrayList<>(size());
+
+        forEach((k, v) -> values.add(v));
+
+        return values;
+    }
+
+    @Override
+    public List<K> keys() {
+        final List<K> keys = new ArrayList<>(size());
+
+        forEach((k, v) -> keys.add(k));
+
+        return keys;
+    }
+
+    @Override
+    public void forEach(final BiConsumer<? super K, ? super V> action) {
         for (int i = 0; i < capacity; ++i) {
             Entry<K, V> entry = table.get(i);
 
             while (entry != null) {
-                entries.add(entry);
+                action.accept(entry.getKey(), entry.getValue());
                 entry = entry.getNext();
             }
         }
-
-        return entries;
-	}
+    }
 }

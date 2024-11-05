@@ -35,7 +35,7 @@ public class OrderBuilder implements Builder<Order> {
             ob.setQuantity(quantities.get(i));
             obs.set(i, ob);
         }
-        this.order.getOrderBooks().add(obs);
+        this.order.getOrderBooks().addAll(obs);
 
     }
 
@@ -44,6 +44,12 @@ public class OrderBuilder implements Builder<Order> {
         ob.setBookId(bookId);
         ob.setQuantity(quantity);
         this.order.getOrderBooks().add(ob);
+    }
+
+    public void setCustomerInformation(String customerName, String customerAddress, String customerPhone) {
+        order.setCustomerName(customerName);
+        order.setCustomerAddress(customerAddress);
+        order.setCustomerPhone(customerPhone);
     }
 
     @Override

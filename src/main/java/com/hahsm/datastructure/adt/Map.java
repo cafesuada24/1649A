@@ -1,5 +1,7 @@
 package com.hahsm.datastructure.adt;
 
+import java.util.function.BiConsumer;
+
 public interface Map<K, V> {
     public static interface Entry<K, V> {
         K getKey();
@@ -19,4 +21,7 @@ public interface Map<K, V> {
     V remove(K key);
     int size();
     List<Entry<K, V>> entries();
+    List<V> values();
+    List<K> keys();
+    void forEach(BiConsumer<? super K, ? super V> action);
 }
