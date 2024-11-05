@@ -1,9 +1,5 @@
 package com.hahsm.datastructure;
 
-import java.util.Comparator;
-
-import com.hahsm.algorithm.LinearSearch;
-import com.hahsm.algorithm.Search;
 import com.hahsm.datastructure.adt.List;
 
 public class ArrayList<T> implements List<T> {
@@ -26,7 +22,6 @@ public class ArrayList<T> implements List<T> {
     private T elements[];
     private int minCapacity;
     private final float loadFactor;
-    private Search searcher;
 
     public ArrayList() {
         this(DEFAULT_MIN_CAPACITY, DEFAULT_LOAD_FACTOR);
@@ -41,7 +36,6 @@ public class ArrayList<T> implements List<T> {
         assert loadFactor > 0 && loadFactor < 1.0;
         this.loadFactor = loadFactor;
         this.ensureCapacity(capacity);
-        this.setSearchStrategy(new LinearSearch());
     }
 
     public ArrayList(List<T> data) {
@@ -49,7 +43,6 @@ public class ArrayList<T> implements List<T> {
         size = data.size();
         ensureCapacity(size);
         assert elements != null;
-        this.setSearchStrategy(new LinearSearch());
         for (int i = 0; i < size; ++i) {
             elements[i] = data.get(i);
         }
@@ -61,7 +54,6 @@ public class ArrayList<T> implements List<T> {
         size = data.length;
         ensureCapacity(size);
         assert elements != null;
-        this.setSearchStrategy(new LinearSearch());
         for (int i = 0; i < size; ++i) {
             elements[i] = data[i];
         }
@@ -242,12 +234,11 @@ public class ArrayList<T> implements List<T> {
 
 	@Override
 	public int indexOf(T target) {
-        assert searcher != null;
-        return searcher.search(this, target);
-	}
-
-	@Override
-	public void setSearchStrategy(Search strategy) {
-        this.searcher = strategy;
+        for (int i = 0; i < size(); ++i) {
+            if (get(i).equals(target)) {
+                return i;
+            }
+        }
+        return -1;
 	}
 }
