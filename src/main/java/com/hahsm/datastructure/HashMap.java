@@ -1,5 +1,7 @@
 package com.hahsm.datastructure;
 
+import java.util.Iterator;
+import java.util.NoSuchElementException;
 import java.util.function.BiConsumer;
 
 import javax.management.openmbean.InvalidKeyException;
@@ -14,7 +16,7 @@ public class HashMap<K, V> implements Map<K, V> {
         private V value;
         private Entry<K, V> next;
 
-        public Entry(K key, V value) {
+        public Entry(final K key, final V value) {
             this.key = key;
             this.value = value;
         }
@@ -30,7 +32,7 @@ public class HashMap<K, V> implements Map<K, V> {
         }
 
         @Override
-        public V setValue(V value) {
+        public V setValue(final V value) {
             final V old = this.value;
             this.value = value;
             return old;
@@ -40,12 +42,12 @@ public class HashMap<K, V> implements Map<K, V> {
             return next;
         }
 
-        public void setNext(Entry<K, V> next) {
+        public void setNext(final Entry<K, V> next) {
             this.next = next;
         }
 
         @Override
-        public boolean equals(Object o) {
+        public boolean equals(final Object o) {
             if (o == null) {
                 return false;
             }
@@ -74,7 +76,7 @@ public class HashMap<K, V> implements Map<K, V> {
         this(DEFAULT_CAPACITY, DEFAUTL_LOAD_FACTOR);
     }
 
-    public HashMap(int capacity, float loadFactor) {
+    public HashMap(final int capacity, final float loadFactor) {
         this.initialCapacity = capacity;
         this.capacity = capacity;
         this.loadFactor = loadFactor;
@@ -96,7 +98,7 @@ public class HashMap<K, V> implements Map<K, V> {
     }
 
     @Override
-    public boolean containsKey(K key) {
+    public boolean containsKey(final K key) {
         final int index = getIndex(key);
         Entry<K, V> entry = table.get(index);
 
@@ -112,13 +114,13 @@ public class HashMap<K, V> implements Map<K, V> {
     }
 
     @Override
-    public boolean containsValue(V value) {
+    public boolean containsValue(final V value) {
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'containsValue'");
     }
 
     @Override
-    public V get(K key) throws InvalidKeyException {
+    public V get(final K key) throws InvalidKeyException {
         final int index = getIndex(key);
         Entry<K, V> entry = table.get(index);
 
@@ -133,7 +135,7 @@ public class HashMap<K, V> implements Map<K, V> {
     }
 
     @Override
-    public boolean put(K key, V value) {
+    public boolean put(final K key, final V value) {
         if (isFull()) {
             sizeUp();
         }
@@ -149,19 +151,17 @@ public class HashMap<K, V> implements Map<K, V> {
             existingEntry = existingEntry.getNext();
         }
 
-        if (table.get(index) == null) {
-            ++size;
-        }
 
         final Entry<K, V> newEntry = new Entry<K, V>(key, value);
         newEntry.setNext(table.get(index));
         table.set(index, newEntry);
+        ++size;
 
         return true;
     }
 
     @Override
-    public V remove(K key) {
+    public V remove(final K key) {
         final int index = getIndex(key);
         Entry<K, V> entry = table.get(index);
         Entry<K, V> prevEntry = null;
@@ -206,14 +206,10 @@ public class HashMap<K, V> implements Map<K, V> {
 
     @Override
     public String toString() {
-        StringBuilder builder = new StringBuilder();
+        final StringBuilder builder = new StringBuilder();
         builder.append("HashMap { ");
-        for (int i = 0; i < table.size(); ++i) {
-            Entry<K, V> entry = table.get(i);
-            while (entry != null) {
-                builder.append(" {key=").append(entry.getKey()).append(",value=").append(entry.getValue()).append("} ");
-                entry = entry.getNext();
-            }
+        for (final var entry: this) {
+            builder.append(" {key=").append(entry.getKey()).append(",value=").append(entry.getValue()).append("} ");
         }
         builder.append("}");
         return builder.toString();
@@ -226,9 +222,17 @@ public class HashMap<K, V> implements Map<K, V> {
         size = 0;
         capacity = newCapacity;
 
-        for (int i = 0; i < oldTable.size(); ++i) {
-            if (oldTable.get(i) != null) {
-                put(oldTable.get(i).getKey(), oldTable.get(i).getValue());
+        for (final var entry: oldTable) {
+            if (entry == null) {
+                continue;
+            }
+
+            var iter = entry;
+            while (iter != null) {
+                put(iter.getKey(), iter.getValue());
+                final var temp = entry;
+                iter = iter.getNext();
+                temp.setNext(null);
             }
         }
     }
@@ -241,11 +245,11 @@ public class HashMap<K, V> implements Map<K, V> {
         changeCapacity(capacity >> 1);
     }
 
-    private int getIndex(Object key) {
+    private int getIndex(final Object key) {
         if (key == null) {
             return 0;
         }
-        int hash = key.hashCode() % capacity;
+        final int hash = key.hashCode() % capacity;
 
         return hash + (hash < 0 ? capacity : 0);
     }
@@ -265,7 +269,7 @@ public class HashMap<K, V> implements Map<K, V> {
     public List<com.hahsm.datastructure.adt.Map.Entry<K, V>> entries() {
         final List<com.hahsm.datastructure.adt.Map.Entry<K, V>> entries = new ArrayList<>(size());
 
-        forEach((k, v) -> entries.add(new Entry<>(k, v)));
+        forEach((entry) -> entries.add(entry));
 
         return entries;
     }
@@ -288,15 +292,40 @@ public class HashMap<K, V> implements Map<K, V> {
         return keys;
     }
 
-    @Override
-    public void forEach(final BiConsumer<? super K, ? super V> action) {
-        for (int i = 0; i < capacity; ++i) {
-            Entry<K, V> entry = table.get(i);
 
-            while (entry != null) {
-                action.accept(entry.getKey(), entry.getValue());
-                entry = entry.getNext();
-            }
-        }
-    }
+	@Override
+	public Iterator<com.hahsm.datastructure.adt.Map.Entry<K, V>> iterator() {
+        return new Iterator<Map.Entry<K,V>>() {
+            private int index = 0;
+            private int currentPos = 0;
+            private Entry<K, V> currentEntry = null;
+
+			@Override
+			public boolean hasNext() {
+                return index < size() && currentPos < table.size();
+			}
+
+			@Override
+			public com.hahsm.datastructure.adt.Map.Entry<K, V> next() {
+                if (!hasNext()) {
+                    throw new NoSuchElementException();
+                }
+                if (currentEntry == null) {
+                    while (currentPos < table.size() && table.get(currentPos) == null) {
+                        ++currentPos;
+                    }
+                    if (currentPos == table.size()) {
+                        throw new IllegalStateException();
+                    }
+
+                    currentEntry = table.get(currentPos++);
+                }
+
+                final var toReturn = currentEntry;
+                currentEntry = currentEntry.getNext();
+                ++index;
+                return toReturn;
+			} 
+        };
+	}
 }

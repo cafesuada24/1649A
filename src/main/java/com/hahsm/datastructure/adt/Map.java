@@ -1,15 +1,15 @@
 package com.hahsm.datastructure.adt;
 
 import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
-public interface Map<K, V> {
+public interface Map<K, V> extends Iterable<Map.Entry<K, V>> {
     public static interface Entry<K, V> {
         K getKey();
         V getValue();
         //int hashCode();
         V setValue(V value);
         boolean equals(Object o);
-
     }
 
     void clear();
@@ -23,5 +23,10 @@ public interface Map<K, V> {
     List<Entry<K, V>> entries();
     List<V> values();
     List<K> keys();
-    void forEach(BiConsumer<? super K, ? super V> action);
+
+    default void forEach(BiConsumer<? super K, ? super V> action) {
+        for (final Entry<K, V> element : this) {
+           action.accept(element.getKey(), element.getValue()); 
+        }
+    }
 }

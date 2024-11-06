@@ -69,8 +69,8 @@ public class ArrayList<T> implements List<T> {
 
     @Override
     public void addAll(List<T> newElements) {
-        for (int i = 0; i < newElements.size(); ++i) {
-            add(newElements.get(i));
+        for (T t : newElements) {
+            add(t);
         }
     }
 
@@ -160,11 +160,6 @@ public class ArrayList<T> implements List<T> {
         }
     }
 
-	@Override
-	public boolean contains(T target) {
-        return indexOf(target) > -1;
-	}
-
     @Override
     public boolean equals(Object o) {
         if (o == null) {
@@ -173,16 +168,17 @@ public class ArrayList<T> implements List<T> {
         if (!this.getClass().isAssignableFrom(o.getClass())) {
             return false;
         }
-        
+
         final ArrayList<T> other = (ArrayList<T>) o;
         if (size() != other.size()) {
-            return false;}
+            return false;
+        }
         for (int i = 0; i < size(); ++i) {
             if (!other.get(i).equals(get(i))) {
                 return false;
             }
         }
-        
+
         return true;
     }
 
@@ -231,14 +227,4 @@ public class ArrayList<T> implements List<T> {
     private void sizeDown() {
         changeCapacity(elements.length >> 1);
     }
-
-	@Override
-	public int indexOf(T target) {
-        for (int i = 0; i < size(); ++i) {
-            if (get(i).equals(target)) {
-                return i;
-            }
-        }
-        return -1;
-	}
 }

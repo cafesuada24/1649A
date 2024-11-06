@@ -1,5 +1,6 @@
 package com.hahsm.datastructure;
 
+import java.util.Iterator;
 import java.util.NoSuchElementException;
 
 import com.hahsm.datastructure.adt.Deque;
@@ -188,5 +189,11 @@ public class LinkedList<T> implements Deque<T> {
 	public boolean contains(T target) {
 		// TODO Auto-generated method stub
 		throw new UnsupportedOperationException("Unimplemented method 'contains'");
+	}
+
+	@Override
+	public Iterator<T> iterator() {
+		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException("Unimplemented method 'iterator'");
 	}
 }

@@ -1,6 +1,7 @@
 package com.hahsm.datastructure;
 
 import java.util.Comparator;
+import java.util.Iterator;
 import java.util.NoSuchElementException;
 
 import com.hahsm.common.util.Util;
@@ -116,5 +117,11 @@ public class PriorityQueue<T> implements Queue<T> {
 	public boolean contains(T target) {
 		// TODO Auto-generated method stub
 		throw new UnsupportedOperationException("Unimplemented method 'contains'");
+	}
+
+	@Override
+	public Iterator<T> iterator() {
+		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException("Unimplemented method 'iterator'");
 	}
 }
