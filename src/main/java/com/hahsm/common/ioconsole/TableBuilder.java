@@ -1,5 +1,6 @@
 package com.hahsm.common.ioconsole;
 
+import com.hahsm.common.util.StringUtil;
 import com.hahsm.datastructure.ArrayList;
 import com.hahsm.datastructure.adt.List;
 
@@ -45,10 +46,17 @@ public class TableBuilder {
         final String rowFormat = getRowFormat();
         final StringBuilder builder = new StringBuilder();
         for (int i = 0; i < rows.size(); ++i) {
+            truncate(rows.get(i));
             builder.append(String.format(rowFormat, rows.get(i)));
         }
 
         return builder.toString();
+    }
+
+    private void truncate(Object[] row) {
+        for (int i = 0; i < row.length; ++i) {
+            row[i] = StringUtil.truncate(row[i].toString(), columnsWidth.get(i));
+        }
     }
 
     private String getRowFormat() {
