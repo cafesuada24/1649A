@@ -3,126 +3,130 @@ package com.hahsm.datastructure;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import com.hahsm.datastructure.HashMap.Entry;
 import com.hahsm.datastructure.adt.List;
+import com.hahsm.datastructure.adt.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import com.hahsm.datastructure.adt.Map;
-
-public class HashMapTest {
-
-    private Map<String, Integer> map;
+class HashMapTest {
+    private HashMap<String, Integer> map;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         map = new HashMap<>();
     }
 
     @Test
-    public void testIsEmpty() {
-        // Check that the map is initially empty
-        assertTrue(map.isEmpty(), "Map should be empty initially");
-
-        // Add an element and check that it's no longer empty
-        map.put("Apple", 1);
-        assertFalse(map.isEmpty(), "Map should not be empty after adding an element");
-
-        // Clear the map and check that it is empty again
+    void testClear() {
+        map.put("key1", 1);
+        map.put("key2", 2);
         map.clear();
-        assertTrue(map.isEmpty(), "Map should be empty after clearing all elements");
+        assertTrue(map.isEmpty());
+        assertEquals(0, map.size());
     }
 
     @Test
-    public void testSize() {
-        // Check the initial size
-        assertEquals(0, map.size(), "Initial size should be 0");
-
-        // Add elements and check the updated size
-        map.put("Apple", 1);
-        map.put("Banana", 2);
-        assertEquals(2, map.size(), "Size should be 2 after adding two elements");
-
-        // Remove an element and check the updated size
-        map.remove("Apple");
-        assertEquals(1, map.size(), "Size should be 1 after removing one element");
-
-        // Clear the map and check that the size is 0 again
-        map.clear();
-        assertEquals(0, map.size(), "Size should be 0 after clearing all elements");
+    void testContainsKey() {
+        map.put("key1", 1);
+        assertTrue(map.containsKey("key1"));
+        assertFalse(map.containsKey("key2"));
     }
 
     @Test
-    public void testPutAndGet() {
-        // Add an element and verify it can be retrieved
-        map.put("Apple", 1);
-        assertEquals(1, map.get("Apple"), "Expected value for 'Apple' is 1");
-
-        // Add another element and verify retrieval
-        map.put("Banana", 2);
-        assertEquals(2, map.get("Banana"), "Expected value for 'Banana' is 2");
-
-        // Update an element's value and verify
-        map.put("Apple", 3);
-        assertEquals(3, map.get("Apple"), "Updated value for 'Apple' should be 3");
-
-        // Try to get a nonexistent key (should return null)
-        assertNull(map.get("Orange"), "Expected null for a key that doesn't exist");
+    void testGet() {
+        map.put("key1", 1);
+        assertEquals(1, map.get("key1"));
+        assertNull(map.get("key2")); // Should return null for non-existent key
     }
 
     @Test
-    public void testContainsKey() {
-        // Initially, the map should not contain any keys
-        assertFalse(map.containsKey("Apple"), "Map should not contain 'Apple' initially");
+    void testPut() {
+        map.put("key1", 1);
+        assertEquals(1, map.get("key1"));
+        assertEquals(1, map.size());
 
-        // Add an element and check that it contains the key
-        map.put("Apple", 1);
-        assertTrue(map.containsKey("Apple"), "Map should contain 'Apple' after adding it");
-
-        // Check that it does not contain a different key
-        assertFalse(map.containsKey("Banana"), "Map should not contain 'Banana'");
-
-        // Remove the key and verify it no longer exists
-        map.remove("Apple");
-        assertFalse(map.containsKey("Apple"), "Map should not contain 'Apple' after removal");
+        // Test overwriting existing key
+        map.put("key1", 2);
+        assertEquals(2, map.get("key1"));
     }
 
     @Test
-    public void testRemove() {
-        // Add elements and verify they are in the map
-        map.put("Apple", 1);
-        map.put("Banana", 2);
+    void testRemove() {
+        map.put("key1", 1);
+        map.put("key2", 2);
+        assertEquals(1, map.remove("key1"));
+        assertNull(map.get("key1"));
+        assertEquals(1, map.size());
 
-        // Remove an element and check that it’s no longer in the map
-        Integer removedValue = map.remove("Apple");
-        assertEquals(1, removedValue, "Removed value should be 1 for 'Apple'");
-        assertFalse(map.containsKey("Apple"), "'Apple' should no longer be in the map");
-
-        // Try to remove a nonexistent key (should return null)
-        assertNull(map.remove("Orange"), "Expected null when removing a nonexistent key");
+        // Test removing non-existent key
+        assertNull(map.remove("key3"));
     }
 
     @Test
-    public void testEntries() {
-        // Add entries to the map
-        map.put("A", 1);
-        map.put("B", 2);
-        map.put("C", 3);
+    void testIsEmpty() {
+        assertTrue(map.isEmpty());
+        map.put("key1", 1);
+        assertFalse(map.isEmpty());
+    }
 
-        // Get all entries as a list
+    @Test
+    void testSize() {
+        assertEquals(0, map.size());
+        map.put("key1", 1);
+        assertEquals(1, map.size());
+        map.put("key2", 2);
+        assertEquals(2, map.size());
+        map.remove("key1");
+        assertEquals(1, map.size());
+    }
+
+    @Test
+    void testEntries() {
+        map.put("key1", 1);
+        map.put("key2", 2);
         List<Map.Entry<String, Integer>> entries = map.entries();
+        assertEquals(2, entries.size());
+        assertEquals(1, entries.filter(e -> e.getKey().equals("key2") && e.getValue() == 2).size());
+        assertEquals(1, entries.filter(e -> e.getKey().equals("key1") && e.getValue() == 1).size());
 
-        // Check each entry in the list
-        assertTrue(entries.contains(new HashMap.Entry<>("A", 1)));
-        assertTrue(entries.contains(new HashMap.Entry<>("B", 2)));
-        assertTrue(entries.contains(new HashMap.Entry<>("C", 3)));
+    }
 
-        // Verify entries are in expected order (depends on insertion order in recent
-        // Java versions)
-        assertEquals("A", entries.get(0).getKey());
-        assertEquals(1, entries.get(0).getValue());
-        assertEquals("B", entries.get(1).getKey());
-        assertEquals(2, entries.get(1).getValue());
-        assertEquals("C", entries.get(2).getKey());
-        assertEquals(3, entries.get(2).getValue());
+    @Test
+    void testValues() {
+        map.put("key1", 1);
+        map.put("key2", 2);
+        List<Integer> values = map.values();
+        assertEquals(2, values.size());
+        assertTrue(values.contains(1));
+        assertTrue(values.contains(2));
+    }
+
+    @Test
+    void testKeys() {
+        map.put("key1", 1);
+        map.put("key2", 2);
+        List<String> keys = map.keys();
+        assertEquals(2, keys.size());
+        assertTrue(keys.contains("key1"));
+        assertTrue(keys.contains("key2"));
+    }
+
+    @Test
+    void testIterator() {
+        map.put("key1", 1);
+        map.put("key2", 2);
+        var iterator = map.iterator();
+        assertNotNull(iterator);
+
+        // Count entries via iterator
+        int count = 0;
+        while (iterator.hasNext()) {
+            Map.Entry<String, Integer> entry = iterator.next();
+            assertTrue(map.containsKey(entry.getKey()));
+            assertEquals(map.get(entry.getKey()), entry.getValue());
+            count++;
+        }
+        assertEquals(map.size(), count);
     }
 }

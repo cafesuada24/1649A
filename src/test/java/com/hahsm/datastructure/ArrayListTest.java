@@ -2,106 +2,163 @@ package com.hahsm.datastructure;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import static org.junit.jupiter.api.Assertions.*;
 
 import com.hahsm.datastructure.adt.List;
 
-public class ArrayListTest {
+import java.util.Iterator;
+import java.util.function.Predicate;
 
-    private ArrayList<Integer> list;
+import static org.junit.jupiter.api.Assertions.*;
+
+
+class ArrayListTest {
+    private ArrayList<String> list;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         list = new ArrayList<>();
     }
 
     @Test
-    public void testAddSingleElement() {
-        list.add(5);
+    void testAdd() {
+        list.add("A");
         assertEquals(1, list.size());
-        assertEquals(5, list.get(0));
+        assertEquals("A", list.get(0));
     }
 
     @Test
-    public void testAddAllElements() {
-        List<Integer> elements = new ArrayList<>(1, 2, 3);
-        list.addAll(elements);
+    void testAddAll() {
+        list.add("A");
+        list.addAll(new ArrayList<>("B", "C"));
         assertEquals(3, list.size());
-        assertEquals(elements, list);
+        assertEquals("B", list.get(1));
+        assertEquals("C", list.get(2));
     }
 
     @Test
-    public void testAddAtSpecificIndex() {
-        list.add(1);
-        list.add(2);
-        list.add(1, 3); // Adds 3 at index 1
-        assertEquals(3, list.size());
-        assertEquals(3, list.get(1));
-        assertEquals(2, list.get(2));
-    }
-
-    @Test
-    public void testSize() {
-        assertEquals(0, list.size());
-        list.add(10);
-        list.add(20);
+    void testAddAtIndex() {
+        list.add("A");
+        list.add(0, "B");
         assertEquals(2, list.size());
+        assertEquals("B", list.get(0));
+        assertEquals("A", list.get(1));
     }
 
     @Test
-    public void testIsEmpty() {
+    void testRemoveElement() {
+        list.add("A");
+        list.add("B");
+        assertTrue(list.remove("A"));
+        assertFalse(list.contains("A"));
+        assertEquals(1, list.size());
+    }
+
+    @Test
+    void testSize() {
+        assertEquals(0, list.size());
+        list.add("A");
+        assertEquals(1, list.size());
+    }
+
+    @Test
+    void testIsEmpty() {
         assertTrue(list.isEmpty());
-        list.add(10);
+        list.add("A");
         assertFalse(list.isEmpty());
+    }
+
+    @Test
+    void testGet() {
+        list.add("A");
+        assertEquals("A", list.get(0));
+    }
+
+    @Test
+    void testSet() {
+        list.add("A");
+        list.set(0, "B");
+        assertEquals("B", list.get(0));
+    }
+
+    @Test
+    void testRemoveByIndex() {
+        list.add("A");
+        list.add("B");
+        assertEquals("A", list.remove(0));
+        assertEquals(1, list.size());
+        assertEquals("B", list.get(0));
+    }
+
+    @Test
+    void testClear() {
+        list.add("A");
         list.clear();
         assertTrue(list.isEmpty());
     }
 
     @Test
-    public void testGet() {
-        list.add(5);
-        list.add(10);
-        assertEquals(5, list.get(0));
-        assertEquals(10, list.get(1));
+    void testEquals() {
+        ArrayList<String> otherList = new ArrayList<>();
+        list.add("A");
+        otherList.add("A");
+        assertEquals(list, otherList);
+
+        otherList.add("B");
+        assertNotEquals(list, otherList);
     }
 
     @Test
-    public void testSet() {
-        list.add(5);
-        list.add(10);
-        int oldValue = list.set(1, 15); // Changes 10 to 15
-        assertEquals(10, oldValue); // Verifies the previous value
-        assertEquals(15, list.get(1));
+    void testEnsureCapacity() {
+        list.ensureCapacity(100);
+        // Assuming this affects internal structure but doesn't change visible properties
+        list.add("A");
+        assertEquals("A", list.get(0));
     }
 
     @Test
-    public void testRemoveByIndex() {
-        list.add(5);
-        list.add(10);
-        int removedElement = list.remove(0); // Removes element at index 0
-        assertEquals(5, removedElement);
+    void testResize() {
+        list.add("A");
+        list.add("B");
+        list.resize(1);
         assertEquals(1, list.size());
-        assertEquals(10, list.get(0));
+        assertEquals("A", list.get(0));
     }
 
     @Test
-    public void testEnsureCapacity() {
-        int initialCapacity = 5;
-        list.ensureCapacity(initialCapacity);
-        list.add(1);
-        list.add(2);
-        assertEquals(2, list.size());
-        // Note: Capacity is not directly testable; we trust ensureCapacity does not affect size
+    void testFilter() {
+        list.add("A");
+        list.add("BB");
+        list.add("CCC");
+        List<String> filteredList = list.filter(s -> s.length() == 2);
+        assertEquals(1, filteredList.size());
+        assertEquals("BB", filteredList.get(0));
     }
 
     @Test
-    public void testResize() {
-        int newSize = 5;
-        for (int i = 0; i < newSize; i++) {
-            list.add(i);
-        }
-        assertEquals(newSize, list.size());
-        list.add(5);
-        assertEquals(newSize + 1, list.size()); // Verifies size increases as we add beyond original limit
+    void testIterator() {
+        list.add("A");
+        list.add("B");
+        Iterator<String> iterator = list.iterator();
+        assertTrue(iterator.hasNext());
+        assertEquals("A", iterator.next());
+        assertTrue(iterator.hasNext());
+        assertEquals("B", iterator.next());
+        assertFalse(iterator.hasNext());
+    }
+
+    @Test
+    void testContains() {
+        list.add("A");
+        assertTrue(list.contains("A"));
+        assertFalse(list.contains("B"));
+    }
+
+    @Test
+    void testIndexOf() {
+        list.add("A");
+        list.add("B");
+        assertEquals(0, list.indexOf("A"));
+        assertEquals(1, list.indexOf("B"));
+        assertEquals(-1, list.indexOf("C"));
     }
 }
