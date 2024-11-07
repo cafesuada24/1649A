@@ -9,9 +9,11 @@ public class OrderBook {
     private int quantity;
 
     private Book book;
+
     private Order order;
 
-    public OrderBook() {}
+    public OrderBook() {
+    }
 
     public OrderBook(int orderId, int bookId, int quantity) {
         setOrderId(orderId);
@@ -36,23 +38,26 @@ public class OrderBook {
     }
 
     public int getQuantity() {
-		return quantity;
-	}
+        return quantity;
+    }
 
-	public void setQuantity(int quantity) {
-		this.quantity = quantity;
-	}
+    public void setQuantity(int quantity) {
+        this.quantity = quantity;
+    }
 
-	public void setBookId(int bookId) {
+    public void setBookId(int bookId) {
         this.bookId = bookId;
-   }
+    }
 
-	public Book getBook() {
-		return book;
-	}
+    public Book getBook() {
+        return book;
+    }
 
-	public Order getOrder() {
-		return order;
-	}
+    public void setBook(Book book) {
+        this.book = book;
+    }
 
+    public Order getOrder() {
+        return order;
+    }
 }

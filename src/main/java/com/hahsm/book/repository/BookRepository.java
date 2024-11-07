@@ -3,56 +3,32 @@ package com.hahsm.book.repository;
 
 import java.sql.SQLException;
 import java.util.Optional;
+import java.util.function.Predicate;
 
 import com.hahsm.datastructure.HashMap;
 import com.hahsm.datastructure.adt.List;
-import com.hahsm.datastructure.ArrayList;
+
+import de.vandermeer.asciitable.AsciiTable;
+
 import com.hahsm.book.model.Book;
 import com.hahsm.common.database.DatabaseConstants;
+import com.hahsm.common.type.Observer;
 import com.hahsm.common.type.Repository;
 import com.hahsm.database.DatabaseConnectionManager;
 
 public class BookRepository implements Repository<Book, Integer> {
     private final DatabaseConnectionManager connectionManager;
-    private HashMap<Integer, Book> books;
-    // private Search searcher;
+    private HashMap<Integer, Book> books = new HashMap<>();
 
     public BookRepository(DatabaseConnectionManager connectionManager) {
         this.connectionManager = connectionManager;
-
         load();
     }
 
     @Override
     public List<Book> getAll() {
-        String sql = "SELECT " +
-                DatabaseConstants.BookColumns.ID + ',' +
-                DatabaseConstants.BookColumns.TITLE + ',' +
-                DatabaseConstants.BookColumns.AUTHOR + ',' +
-                DatabaseConstants.BookColumns.YEAR +
-                " FROM " + DatabaseConstants.BOOK_TABLE;
-
-        List<Book> queryResult = new ArrayList<Book>();
-
-        try (var conn = connectionManager.getConnection()) {
-            var stmt = conn.createStatement();
-            var result = stmt.executeQuery(sql);
-
-            while (result.next()) {
-                queryResult.add(new Book(
-                        result.getInt(DatabaseConstants.BookColumns.ID),
-                        result.getString(DatabaseConstants.BookColumns.TITLE),
-                        result.getString(DatabaseConstants.BookColumns.AUTHOR),
-                        result.getInt(DatabaseConstants.BookColumns.YEAR)));
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-            System.exit(1);
-        } finally {
-            connectionManager.closeConnection();
-        }
-
-        return queryResult;
+        assert books != null;
+        return books.values();
     }
 
     @Override
@@ -110,7 +86,10 @@ public class BookRepository implements Repository<Book, Integer> {
 
             pstmt.setInt(1, id);
 
+            books.remove(id);
+
             int rowsDeleted = pstmt.executeUpdate();
+
             return rowsDeleted == 1;
         } catch (SQLException e) {
             e.printStackTrace();
@@ -145,7 +124,9 @@ public class BookRepository implements Repository<Book, Integer> {
 
             try (var generatedKeys = pstmt.getGeneratedKeys()) {
                 if (generatedKeys.next()) {
-                    newEntity.setId(generatedKeys.getInt(1));
+                    final int generatedId = generatedKeys.getInt(1);
+                    newEntity.setId(generatedId);
+                    books.put(generatedId, newEntity);
                 }
             }
         } catch (SQLException e) {
@@ -158,17 +139,33 @@ public class BookRepository implements Repository<Book, Integer> {
     }
 
     private void load() {
-        if (books != null) {
-            return;
-        }
+        assert books != null;
+        books.clear();
 
-        books = new HashMap<>();
+        String sql = "SELECT " +
+                DatabaseConstants.BookColumns.ID + ',' +
+                DatabaseConstants.BookColumns.TITLE + ',' +
+                DatabaseConstants.BookColumns.AUTHOR + ',' +
+                DatabaseConstants.BookColumns.YEAR +
+                " FROM " + DatabaseConstants.BOOK_TABLE;
 
-        final List<Book> bookList = getAll();
+        try (var conn = connectionManager.getConnection()) {
+            var stmt = conn.createStatement();
+            var result = stmt.executeQuery(sql);
 
-        for (int i = 0; i < bookList.size(); ++i) {
-            final Book book = bookList.get(i);
-            books.put(book.getId(), book);
+            while (result.next()) {
+                final Book book = new Book(
+                        result.getInt(DatabaseConstants.BookColumns.ID),
+                        result.getString(DatabaseConstants.BookColumns.TITLE),
+                        result.getString(DatabaseConstants.BookColumns.AUTHOR),
+                        result.getInt(DatabaseConstants.BookColumns.YEAR));
+                books.put(book.getId(), book);            
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            System.exit(1);
+        } finally {
+            connectionManager.closeConnection();
         }
     }
 
@@ -177,4 +174,47 @@ public class BookRepository implements Repository<Book, Integer> {
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'insert'");
     }
+
+	@Override
+	public List<Book> getByFilter(Predicate<Book> filter) {
+		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException("Unimplemented method 'getByFilter'");
+	}
+
+    @Override
+    public String toString() {
+        AsciiTable tb = new AsciiTable();
+
+        tb.addRule();
+        tb.addRow(
+                DatabaseConstants.BookColumns.ID,
+                DatabaseConstants.BookColumns.TITLE,
+                DatabaseConstants.BookColumns.AUTHOR,
+                DatabaseConstants.BookColumns.YEAR);
+        tb.addRule();
+
+        for (final var book : books.values()) {
+            tb.addRow(book.getID(), book.getTitle(), book.getAuthor(), book.getYear());
+        }
+        tb.addRule();
+        return tb.render();
+    }
+
+	@Override
+	public void registerObserver(Observer<Book> observer) {
+		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException("Unimplemented method 'registerObserver'");
+	}
+
+	@Override
+	public void removeObserver(Observer<Book> observer) {
+		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException("Unimplemented method 'removeObserver'");
+	}
+
+	@Override
+	public void notifyObservers(Book data) {
+		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException("Unimplemented method 'notifyObservers'");
+	}
 }

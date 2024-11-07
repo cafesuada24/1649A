@@ -1,5 +1,7 @@
 package com.hahsm.common.type;
 
+import java.util.Objects;
+
 public class Pair<F, S> {
     private F first;
     private S second;
@@ -26,4 +28,13 @@ public class Pair<F, S> {
 	public void setSecond(S second) {
 		this.second = second;
 	}
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getFirst(), getSecond());
+    }
+
+    public boolean equals(Pair<F, S> other) {
+        return getFirst() == other.getFirst() && getSecond() == other.getSecond();
+    }
 }

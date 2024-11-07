@@ -31,7 +31,6 @@ public class ArrayList<T> implements List<T> {
         this(capacity, DEFAULT_LOAD_FACTOR);
     }
 
-    // @SuppressWarnings("unchecked")
     public ArrayList(final int capacity, final float loadFactor) {
         assert loadFactor > 0 && loadFactor < 1.0;
         this.loadFactor = loadFactor;
@@ -49,7 +48,7 @@ public class ArrayList<T> implements List<T> {
     }
 
     // @SuppressWarnings("unchecked")
-    public ArrayList(T... data) {
+    public ArrayList(@SuppressWarnings("unchecked") T... data) {
         this.loadFactor = DEFAULT_LOAD_FACTOR;
         size = data.length;
         ensureCapacity(size);

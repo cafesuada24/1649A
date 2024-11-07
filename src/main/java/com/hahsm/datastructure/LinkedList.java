@@ -4,11 +4,12 @@ import java.util.Iterator;
 import java.util.NoSuchElementException;
 
 import com.hahsm.datastructure.adt.Deque;
+import com.hahsm.datastructure.adt.Stack;
 
 /**
  * LinkedList
  */
-public class LinkedList<T> implements Deque<T> {
+public class LinkedList<T> implements Deque<T>, Stack<T> {
     /**
      * ListkedList<T>.Node
      */
@@ -195,5 +196,10 @@ public class LinkedList<T> implements Deque<T> {
 	public Iterator<T> iterator() {
 		// TODO Auto-generated method stub
 		throw new UnsupportedOperationException("Unimplemented method 'iterator'");
+	}
+
+	@Override
+	public T top() {
+        return back();
 	}
 }

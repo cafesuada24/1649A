@@ -1,11 +1,14 @@
 package com.hahsm.common.type;
 
 import java.util.Optional;
+import java.util.function.Predicate;
 
 import com.hahsm.datastructure.adt.List;
 
-public interface Repository<ModelType, IDType> {
+public interface Repository<ModelType, IDType> extends Observable<ModelType> {
     public List<ModelType> getAll();
+
+    public List<ModelType> getByFilter(Predicate<ModelType> filter);
 
     public Optional<ModelType> getByID(IDType id);
 

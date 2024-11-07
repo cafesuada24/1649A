@@ -3,36 +3,35 @@ package com.hahsm.order.repository;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.util.Comparator;
+import java.time.ZoneOffset;
 import java.util.Optional;
-import java.util.function.Function;
+import java.util.function.Predicate;
 
 import com.hahsm.datastructure.adt.List;
 import com.hahsm.datastructure.ArrayList;
 import com.hahsm.datastructure.HashMap;
-import com.hahsm.algorithm.Search;
 import com.hahsm.book.model.Book;
 import com.hahsm.common.database.DatabaseConstants;
+import com.hahsm.common.type.Observable;
+import com.hahsm.common.type.Observer;
 import com.hahsm.common.type.Repository;
-import com.hahsm.common.type.Pair;
 import com.hahsm.database.DatabaseConnectionManager;
 import com.hahsm.order.model.Order;
-import com.hahsm.order.model.OrderBook;
 
 public class OrderRepository implements Repository<Order, Integer> {
     /**
      *
      */
     private final DatabaseConnectionManager connectionManager;
-    // private final Repository<Book, Integer> bookRepository;
-    private final Repository<OrderBook, Pair<Integer, Integer>> orderBookRepository;
+    //private final Repository<Book, Integer> bookRepository;
+    private final OrderBookRepository orderBookRepository;
     private final HashMap<Integer, Order> orders;
+    private final List<Observer<Order>> observers = new ArrayList<>();
 
-    public OrderRepository(
-            final DatabaseConnectionManager connectionManager,
-            final Repository<OrderBook, Pair<Integer, Integer>> orderBookRepository) {
+    public OrderRepository(final DatabaseConnectionManager connectionManager, final Repository<Book, Integer> bookRepository) {
+        //this.bookRepository = bookRepository;
+        this.orderBookRepository = new OrderBookRepository(connectionManager, bookRepository);
         this.connectionManager = connectionManager;
-        this.orderBookRepository = orderBookRepository;
         orders = new HashMap<>();
         load();
     }
@@ -42,6 +41,12 @@ public class OrderRepository implements Repository<Order, Integer> {
         assert orders != null;
         return orders.values();
     }
+
+	@Override
+	public List<Order> getByFilter(Predicate<Order> filter) {
+		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException("Unimplemented method 'getByFilter'");
+	}
 
     @Override
     public boolean update(final Order entity) {
@@ -57,7 +62,7 @@ public class OrderRepository implements Repository<Order, Integer> {
     public boolean deleteByID(final Integer id) {
         assert orders != null;
 
-        final String sql = "DELETE FROM " + DatabaseConstants.USER_TABLE +
+        final String sql = "DELETE FROM " + DatabaseConstants.ORDER_TABLE +
                 " WHERE " + DatabaseConstants.OrderColumns.ID + " = ?";
 
         try (var conn = connectionManager.getConnection();
@@ -86,23 +91,25 @@ public class OrderRepository implements Repository<Order, Integer> {
     public Order insert(final Order newEntity) {
         final String sql = "INSERT INTO " + DatabaseConstants.ORDER_TABLE + '(' +
         // DatabaseConstants.OrderColumns.ID + ',' +
-                DatabaseConstants.OrderColumns.USER_ID + ',' +
-                DatabaseConstants.OrderColumns.ORDER_DATE + ',' +
+                //DatabaseConstants.OrderColumns.USER_ID + ',' +
+                //DatabaseConstants.OrderColumns.ORDER_DATE + ',' +
                 DatabaseConstants.OrderColumns.ORDER_TIME + ',' +
+                DatabaseConstants.OrderColumns.ESTIMATED_DELIVERY_TIME + ',' +
                 DatabaseConstants.OrderColumns.CUSTOMER_NAME + ',' +
                 DatabaseConstants.OrderColumns.CUSTOMER_ADDRESS + ',' +
-                DatabaseConstants.OrderColumns.CUSTOMER_PHONE +
+                DatabaseConstants.OrderColumns.CUSTOMER_PHONE + ',' +
+                DatabaseConstants.OrderColumns.STATUS +
                 ") VALUES(?,?,?,?,?,?);";
 
         try (var conn = connectionManager.getConnection();
                 var pstmt = conn.prepareStatement(sql)) {
 
-            pstmt.setInt(1, newEntity.getUserId());
-            pstmt.setDate(2, newEntity.getOrderDate());
-            pstmt.setTime(3, newEntity.getOrderTime());
-            pstmt.setString(4, newEntity.getCustomerName());
-            pstmt.setString(5, newEntity.getCustomerAddress());
-            pstmt.setString(6, newEntity.getCustomerPhone());
+            pstmt.setLong(1, newEntity.getOrderTime().toEpochSecond(ZoneOffset.UTC));
+            pstmt.setLong(2, newEntity.getEstimatedDeliveryTime().toEpochSecond(ZoneOffset.UTC));
+            pstmt.setString(3, newEntity.getCustomerName());
+            pstmt.setString(4, newEntity.getCustomerAddress());
+            pstmt.setString(5, newEntity.getCustomerPhone());
+            pstmt.setString(6, newEntity.getStatus().name());
 
             final int affectedRows = pstmt.executeUpdate();
 
@@ -137,6 +144,7 @@ public class OrderRepository implements Repository<Order, Integer> {
         }
 
         orderBookRepository.insert(newEntity.getOrderBooks());
+        notifyObservers(newEntity);
 
         return newEntity;
     }
@@ -153,14 +161,20 @@ public class OrderRepository implements Repository<Order, Integer> {
     }
 
     @Override
-    public List<Order> insert(List<Order> entities) {
+    public List<Order> insert(final List<Order> entities) {
         assert orders != null;
 
-        final String sql = "INSERT INTO " + DatabaseConstants.USER_TABLE + '(' +
-                DatabaseConstants.OrderColumns.USER_ID + ',' +
-                DatabaseConstants.OrderColumns.ORDER_DATE + ',' +
-                DatabaseConstants.OrderColumns.ORDER_TIME +
-                ") VALUES(?,?,?);";
+        final String sql = "INSERT INTO " + DatabaseConstants.ORDER_TABLE + '(' +
+        // DatabaseConstants.OrderColumns.ID + ',' +
+                //DatabaseConstants.OrderColumns.USER_ID + ',' +
+                //DatabaseConstants.OrderColumns.ORDER_DATE + ',' +
+                DatabaseConstants.OrderColumns.ORDER_TIME + ',' +
+                DatabaseConstants.OrderColumns.ESTIMATED_DELIVERY_TIME + ',' +
+                DatabaseConstants.OrderColumns.CUSTOMER_NAME + ',' +
+                DatabaseConstants.OrderColumns.CUSTOMER_ADDRESS + ',' +
+                DatabaseConstants.OrderColumns.CUSTOMER_PHONE + ',' +
+                DatabaseConstants.OrderColumns.STATUS +
+                ") VALUES(?,?,?,?,?,?);";
 
         Connection conn = null;
         try {
@@ -170,9 +184,12 @@ public class OrderRepository implements Repository<Order, Integer> {
 
             for (int i = 0; i < entities.size(); ++i) {
                 final Order order = entities.get(i);
-                pstmt.setInt(1, order.getUserId());
-                pstmt.setDate(2, order.getOrderDate());
-                pstmt.setTime(3, order.getOrderTime());
+                pstmt.setLong(1, order.getOrderTime().toEpochSecond(ZoneOffset.UTC));
+                pstmt.setLong(2, order.getEstimatedDeliveryTime().toEpochSecond(ZoneOffset.UTC));
+                pstmt.setString(3, order.getCustomerName());
+                pstmt.setString(4, order.getCustomerAddress());
+                pstmt.setString(5, order.getCustomerPhone());
+                pstmt.setString(6, order.getStatus().name());
 
                 pstmt.addBatch();
 
@@ -184,16 +201,14 @@ public class OrderRepository implements Repository<Order, Integer> {
             conn.commit();
 
             try (var generatedKeys = pstmt.getGeneratedKeys()) {
-                int index = 0;
-                while (generatedKeys.next()) {
-                    entities.get(index).setId(generatedKeys.getInt(1));
-                }
-                for (int i = 0; i < entities.size(); ++i) {
-                    assert entities.get(i).getId() != 0;
-
+                for (int index = 0; generatedKeys.next(); ++index) {
+                    final int generatedId = generatedKeys.getInt(1); 
+                    entities.get(index).setId(generatedId);
+                    orders.put(generatedId, entities.get(index));
                 }
             }
 
+            conn.setAutoCommit(true);
         } catch (final SQLException e) {
             e.printStackTrace();
             if (conn != null) {
@@ -209,8 +224,29 @@ public class OrderRepository implements Repository<Order, Integer> {
             connectionManager.closeConnection();
         }
 
+
         return entities;
     }
+
+    //@Override
+    //public String toString() {
+    //    AsciiTable tb = new AsciiTable();
+    //
+    //    tb.addRule();
+    //    tb.addRow(
+    //            DatabaseConstants.BookColumns.ID,
+    //            DatabaseConstants.BookColumns.TITLE,
+    //            DatabaseConstants.BookColumns.AUTHOR,
+    //            DatabaseConstants.BookColumns.YEAR);
+    //    tb.addRule();
+    //
+    //    for (int i = 0; i < books.size(); ++i) {
+    //        Book book = books.get(i);
+    //        tb.addRow(book.getID(), book.getTitle(), book.getAuthor(), book.getYear());
+    //    }
+    //    tb.addRule();
+    //    return tb.render();
+    //}
 
     private void load() {
         assert orders != null;
@@ -218,29 +254,30 @@ public class OrderRepository implements Repository<Order, Integer> {
 
         final String sql = "SELECT " +
                 DatabaseConstants.OrderColumns.ID + ',' +
-                DatabaseConstants.OrderColumns.USER_ID + ',' +
-                DatabaseConstants.OrderColumns.ORDER_DATE + ',' +
                 DatabaseConstants.OrderColumns.ORDER_TIME + ',' +
+                DatabaseConstants.OrderColumns.ESTIMATED_DELIVERY_TIME + ',' +
                 DatabaseConstants.OrderColumns.CUSTOMER_NAME + ',' +
                 DatabaseConstants.OrderColumns.CUSTOMER_ADDRESS + ',' +
-                DatabaseConstants.OrderColumns.CUSTOMER_PHONE +
+                DatabaseConstants.OrderColumns.CUSTOMER_PHONE + ',' +
+                DatabaseConstants.OrderColumns.STATUS +
                 " FROM " + DatabaseConstants.ORDER_TABLE;
-
-        final List<Order> queryResult = new ArrayList<Order>();
 
         try (var conn = connectionManager.getConnection()) {
             final var stmt = conn.createStatement();
             final var result = stmt.executeQuery(sql);
 
             while (result.next()) {
-                queryResult.add(new Order(
+                final Order order = new Order(
                         result.getInt(DatabaseConstants.OrderColumns.ID),
-                        result.getInt(DatabaseConstants.OrderColumns.USER_ID),
-                        result.getDate(DatabaseConstants.OrderColumns.ORDER_DATE),
-                        result.getTime(DatabaseConstants.OrderColumns.ORDER_TIME),
+                        result.getLong(DatabaseConstants.OrderColumns.ORDER_TIME),
+                        result.getLong(DatabaseConstants.OrderColumns.ESTIMATED_DELIVERY_TIME),
                         result.getString(DatabaseConstants.OrderColumns.CUSTOMER_NAME),
                         result.getString(DatabaseConstants.OrderColumns.CUSTOMER_ADDRESS),
-                        result.getString(DatabaseConstants.OrderColumns.CUSTOMER_PHONE)));
+                        result.getString(DatabaseConstants.OrderColumns.CUSTOMER_PHONE),
+                        result.getString(DatabaseConstants.OrderColumns.STATUS));
+                final var orderBooks = orderBookRepository.getByFilter((x) -> x.getOrderId() == order.getId());
+                order.setOrderBooks(orderBooks);
+                orders.put(order.getId(), order);
             }
         } catch (final SQLException e) {
             e.printStackTrace();
@@ -248,10 +285,22 @@ public class OrderRepository implements Repository<Order, Integer> {
         } finally {
             connectionManager.closeConnection();
         }
-
-        for (int i = 0; i < queryResult.size(); ++i) {
-            final Order order = queryResult.get(i);
-            orders.put(order.getId(), order);
-        }
     }
+
+	@Override
+	public void registerObserver(Observer<Order> observer) {
+        this.observers.add(observer);
+	}
+
+	@Override
+	public void removeObserver(Observer<Order> observer) {
+        this.observers.remove(observer);
+	}
+
+	@Override
+	public void notifyObservers(final Order newOrder) {
+        for (Observer<Order> observer : observers) {
+            observer.update(newOrder);
+        }
+	}
 }

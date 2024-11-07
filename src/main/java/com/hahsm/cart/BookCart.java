@@ -2,6 +2,7 @@ package com.hahsm.cart;
 
 import java.sql.Date;
 import java.sql.Time;
+import java.time.LocalDateTime;
 
 import com.hahsm.book.model.Book;
 import com.hahsm.common.type.Pair;
@@ -45,12 +46,13 @@ public class BookCart {
 
     public Order toOrder() {
         final Order order = new Order();
-        final long currentTimeMillis = System.currentTimeMillis(); 
-        order.setOrderDate(new Date(currentTimeMillis)); 
-        order.setOrderTime(new Time(currentTimeMillis));
+        final var now = LocalDateTime.now();
+        order.setOrderTime(now);
+        order.setEstimatedDeliveryTime(now.plusSeconds(30));
         order.setCustomerName(customerName);
         order.setCustomerAddress(customerAddress);
         order.setCustomerPhone(customerPhone);
+        order.setStatus(Order.Status.PROCESSING);
 
         for (final var entry : cart) {
             final Book book = entry.getValue().getSecond();

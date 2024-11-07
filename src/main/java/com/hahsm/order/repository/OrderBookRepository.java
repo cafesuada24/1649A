@@ -4,10 +4,13 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.Optional;
+import java.util.function.Predicate;
 
 import com.hahsm.common.type.Repository;
 import com.hahsm.database.DatabaseConnectionManager;
+import com.hahsm.book.model.Book;
 import com.hahsm.common.database.DatabaseConstants;
+import com.hahsm.common.type.Observer;
 import com.hahsm.common.type.Pair;
 import com.hahsm.datastructure.adt.List;
 import com.hahsm.order.model.OrderBook;
@@ -17,10 +20,14 @@ import com.hahsm.datastructure.HashMap;
 public class OrderBookRepository implements Repository<OrderBook, Pair<Integer, Integer>> {
     private final DatabaseConnectionManager connectionManager;
     private final HashMap<Pair<Integer, Integer>, OrderBook> orderBooks;
+    final Repository<Book, Integer> bookRepository;
 
-    public OrderBookRepository(final DatabaseConnectionManager connectionManager) {
+    public OrderBookRepository(
+            final DatabaseConnectionManager connectionManager,
+            final Repository<Book, Integer> bookRepository) {
         this.connectionManager = connectionManager;
         orderBooks = new HashMap<>();
+        this.bookRepository = bookRepository;
         load();
     }
 
@@ -36,6 +43,19 @@ public class OrderBookRepository implements Repository<OrderBook, Pair<Integer, 
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'getByID'");
     }
+
+	@Override
+	public List<OrderBook> getByFilter(Predicate<OrderBook> filter) {
+        final List<OrderBook> matches = new ArrayList<>();
+
+        for (final var ob: orderBooks.values()) {
+            if (filter.test(ob)) {
+                matches.add(ob);
+            }
+        }
+
+        return matches;
+	}
 
     @Override
     public boolean update(OrderBook entity) {
@@ -117,19 +137,20 @@ public class OrderBookRepository implements Repository<OrderBook, Pair<Integer, 
                 DatabaseConstants.OrderBookColumns.QUANTITY +
                 " FROM " + DatabaseConstants.ORDER_BOOK_TABLE;
 
-        final List<OrderBook> queryResult = new ArrayList<OrderBook>();
-
         try (var conn = connectionManager.getConnection()) {
             final var stmt = conn.createStatement();
             final var result = stmt.executeQuery(sql);
             
-            new OrderBook();
-
             while (result.next()) {
-                queryResult.add(new OrderBook(
+                final var ob = new OrderBook(
                         result.getInt(DatabaseConstants.OrderBookColumns.ORDER_ID),
                         result.getInt(DatabaseConstants.OrderBookColumns.BOOK_ID),
-                        result.getInt(DatabaseConstants.OrderBookColumns.QUANTITY)));
+                        result.getInt(DatabaseConstants.OrderBookColumns.QUANTITY));
+                final var book = bookRepository.getByID(ob.getBookId());
+                if (book.isPresent()) {
+                    ob.setBook(book.get());  
+                }
+                orderBooks.put(ob.getId(), ob);
             }
         } catch (final SQLException e) {
             e.printStackTrace();
@@ -137,10 +158,27 @@ public class OrderBookRepository implements Repository<OrderBook, Pair<Integer, 
         } finally {
             connectionManager.closeConnection();
         }
-
-        for (int i = 0; i < queryResult.size(); ++i) {
-            final OrderBook orderBook = queryResult.get(i);
-            orderBooks.put(orderBook.getId(), orderBook);
-        }
     }
+
+
+	@Override
+	public void registerObserver(Observer<OrderBook> observer) {
+		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException("Unimplemented method 'registerObserver'");
+	}
+
+
+	@Override
+	public void removeObserver(Observer<OrderBook> observer) {
+		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException("Unimplemented method 'removeObserver'");
+	}
+
+
+	@Override
+	public void notifyObservers(OrderBook data) {
+		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException("Unimplemented method 'notifyObservers'");
+	}
+
 }

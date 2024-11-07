@@ -32,8 +32,6 @@ import com.hahsm.order.repository.OrderRepository;
 import com.hahsm.orderprocesssingsystem.OrderProcessingSystem;
 import com.hahsm.datastructure.ArrayList;
 import com.hahsm.datastructure.PriorityQueue;
-import com.hahsm.user.model.User;
-import com.hahsm.user.repository.UserRepository;
 import com.hahsm.datastructure.HashMap;
 
 public class App {
@@ -43,37 +41,14 @@ public class App {
         final DatabaseConnectionManager connectionManager = new DatabaseConnectionManager("main");
         final Repository<Book, Integer> bookRepo = new BookRepository(connectionManager);
         final Repository<Order, Integer> orderRepo = new OrderRepository(connectionManager, bookRepo);
+        final OrderProcessingSystem ops = new OrderProcessingSystem(orderRepo);
         // final OrderProcessingSystem ops = new OrderProcessingSystem(orderRepo,
         // orderBookRepo, bookRepo);
         final Scanner sc = new Scanner(System.in);
         final FrameManager fm = new FrameManager();
-        fm.addFrame(mainMenu(sc, orderRepo, bookRepo));
+        fm.addFrame(mainMenu(sc, orderRepo, bookRepo, ops));
 
         sc.close();
-    }
-
-    private static Frame mainMenu(final Scanner sc, final Repository<Order, Integer> orderRepo,
-            final Repository<Book, Integer> bookRepo) {
-        return new Frame((FrameManager fm) -> {
-            final int option = ConsoleHelper.getFromMenu(
-                    sc,
-                    "Please enter your option",
-                    new ArrayList<>("Create Order", "Track Order", "Exit"),
-                    1);
-
-            switch (option) {
-                case 1:
-                    fm.addFrame(createOder(sc, orderRepo, bookRepo));
-                    break;
-                case 2:
-                    fm.addFrame(trackOrder(sc, orderRepo));
-                    break;
-                case 3:
-                    System.out.println("Good bye!");
-                    System.exit(0);
-                    return;
-            }
-        });
     }
 
     private static void init() {
@@ -85,12 +60,42 @@ public class App {
         }
     }
 
+    private static Frame mainMenu(final Scanner sc, final Repository<Order, Integer> orderRepo,
+            final Repository<Book, Integer> bookRepo, final OrderProcessingSystem ops) {
+        return new Frame((FrameManager fm) -> {
+            final int option = ConsoleHelper.getFromMenu(
+                    sc,
+                    "Please enter your option",
+                    new ArrayList<>("Create Order", "Show all orders", "Track Order", "Exit"),
+                    1);
+
+            switch (option) {
+                case 1:
+                    fm.addFrame(createOder(sc, orderRepo, bookRepo));
+                    break;
+                case 2:
+                    fm.addFrame(showAllOrders(ops));
+                    break;
+                case 3:
+                    fm.addFrame(trackOrder(sc, orderRepo));
+                    break;
+                case 4:
+                    System.out.println("Good bye!");
+                    System.exit(0);
+                    return;
+            }
+        });
+    }
+
+    private static Frame showAllOrders(final OrderProcessingSystem ops) {
+        return new Frame((FrameManager fm) -> {
+            System.out.println(ops.toString());
+        });
+    }
+
     private static Frame trackOrder(final Scanner sc, final Repository<Order, Integer> orderRepo) {
         return new Frame((fm) -> {
             final int id = ConsoleHelper.getInteger(sc, "Please enter order id, type 0 to ignore: ");
-            if (sc.hasNextLine()) {
-                sc.nextLine();
-            }
 
             List<Order> searchResult = new ArrayList<>();
 
@@ -100,12 +105,9 @@ public class App {
                     searchResult.add(res.get());
                 }
             } else {
-                System.out.print("Enter your name: ");
-                final String customerName = sc.nextLine().strip();
-                System.out.print("Enter your address: ");
-                final String customerAddress = sc.nextLine().strip();
-                System.out.print("Enter your phone number: ");
-                final String customerPhone = sc.nextLine().strip();
+                final String customerName = ConsoleHelper.getString(sc, "Enter your name: ");
+                final String customerAddress = ConsoleHelper.getString(sc, "Enter your address: ");
+                final String customerPhone = ConsoleHelper.getString(sc, "Enter your phone number: ");
 
                 searchResult = orderRepo.getByFilter((order) -> {
                     return order.getCustomerName() != null && order.getCustomerName().startsWith(customerName);
@@ -136,23 +138,14 @@ public class App {
             final Repository<Order, Integer> orderRepo,
             final Repository<Book, Integer> bookRepo) {
         return new Frame((fm) -> {
-            final String table = getOrderTable(bookRepo.getAll());
+            final String table = bookRepo.toString();
             BookCart cart = new BookCart();
 
-            System.out.print("Enter your name: ");
-            final String customerName = sc.nextLine().strip();
-            System.out.print("Enter your address: ");
-            final String customerAddress = sc.nextLine().strip();
-            System.out.print("Enter your phone number: ");
-            final String customerPhone = sc.nextLine().strip();
             boolean loop = true;
-
-            cart.setCustomerInformation(customerName, customerAddress, customerPhone);
-
             while (loop) {
                 ConsoleHelper.Clear();
                 System.out.println(table);
-                System.out.println();
+                System.out.println("=".repeat(100));
 
                 System.out.println("Your current card: ");
                 System.out.println(cart.toString());
@@ -172,29 +165,20 @@ public class App {
                         "Continue to add? Enter 'y' for yes or 'n' for no: ");
             }
 
+            System.out.println("=".repeat(100));
+
+            final String customerName = ConsoleHelper.getString(sc, "Enter your name: ");
+            final String customerAddress = ConsoleHelper.getString(sc, "Enter your address: ");
+            final String customerPhone = ConsoleHelper.getString(sc, "Enter your phone number: ");
+
+            cart.setCustomerInformation(customerName, customerAddress, customerPhone);
+
             final Order order = cart.toOrder();
             orderRepo.insert(order);
 
+            System.out.println("=".repeat(100));
+
             System.out.println("Your order is created with id: " + order.getId());
         });
-    }
-
-    private static String getOrderTable(final List<Book> books) {
-        AsciiTable tb = new AsciiTable();
-
-        tb.addRule();
-        tb.addRow(
-                DatabaseConstants.BookColumns.ID,
-                DatabaseConstants.BookColumns.TITLE,
-                DatabaseConstants.BookColumns.AUTHOR,
-                DatabaseConstants.BookColumns.YEAR);
-        tb.addRule();
-
-        for (int i = 0; i < books.size(); ++i) {
-            Book book = books.get(i);
-            tb.addRow(book.getID(), book.getTitle(), book.getAuthor(), book.getYear());
-        }
-        tb.addRule();
-        return tb.render();
     }
 }

@@ -3,6 +3,7 @@ package com.hahsm.algorithm;
 import java.util.Comparator;
 import java.util.function.Predicate;
 
+import com.hahsm.datastructure.ArrayList;
 import com.hahsm.datastructure.adt.List;
 
 public class LinearSearch implements Search {
@@ -33,4 +34,16 @@ public class LinearSearch implements Search {
         }
         return -1;
     }
+
+	@Override
+	public <T> List<T> filter(List<T> data, Predicate<T> filter) {
+        List<T> filtered = new ArrayList<>();
+        
+        for (int i = 0; i < data.size(); ++i) {
+            if (filter.test(data.get(i))) {
+                filtered.add(data.get(i));
+            }
+        }
+        return filtered;
+	}
 }

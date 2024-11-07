@@ -4,7 +4,7 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
-import com.hahsm.common.util.Util;
+import com.hahsm.common.Util;
 import com.hahsm.datastructure.adt.List;
 import com.hahsm.datastructure.adt.Queue;
 
@@ -57,7 +57,7 @@ public class PriorityQueue<T> implements Queue<T> {
         }
 
         final T front = queueList.get(0);
-        Util.swap(queueList, 0, queueList.size() - 1);
+        Util.swapList(queueList, 0, queueList.size() - 1);
         queueList.remove(queueList.size() - 1);
         heapify(0);
 
@@ -90,7 +90,7 @@ public class PriorityQueue<T> implements Queue<T> {
         }
 
         if (largest != i) {
-            Util.swap(queueList, largest, i);
+            Util.swapList(queueList, largest, i);
             heapify(largest);
         }
     }
@@ -103,7 +103,7 @@ public class PriorityQueue<T> implements Queue<T> {
         if (comparator.compare(queueList.get(parent), queueList.get(i)) <= 0) {
             return;
         }
-        Util.swap(queueList, parent, i);
+        Util.swapList(queueList, parent, i);
         swim(parent);
     }
 
@@ -115,13 +115,11 @@ public class PriorityQueue<T> implements Queue<T> {
 
 	@Override
 	public boolean contains(T target) {
-		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException("Unimplemented method 'contains'");
+        return queueList.contains(target); 
 	}
 
 	@Override
 	public Iterator<T> iterator() {
-		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException("Unimplemented method 'iterator'");
+        return queueList.iterator();
 	}
 }
