@@ -106,6 +106,12 @@ public class OrderBookRepository implements Repository<OrderBook, Pair<Integer, 
                 if (i % 1000 == 0 || i == entities.size() - 1) {
                     pstmt.executeBatch();
                 }
+
+                final Optional<Book> book = bookRepository.getByID(ob.getBookId());
+                if (book.isEmpty()) {
+                    throw new IllegalArgumentException("Book ID not found: " + ob.getBookId());
+                }
+                ob.setBook(book.get());
             }
 
             conn.commit();

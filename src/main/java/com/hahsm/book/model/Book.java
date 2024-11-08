@@ -64,18 +64,14 @@ public class Book implements Comparable<Book> {
 
     @Override
     public int compareTo(Book o) {
-        if (getYear() < o.getYear()) {
-            return -1;
-        } else if (getYear() > o.getYear()) {
-            return 1;
+        if (getTitle() != o.getTitle()) {
+            return getTitle().compareTo(o.getTitle());
         }
 
-        int compare = getAuthor().compareTo(o.getAuthor());
-        if (compare != 0) {
-            return compare;
+        if (getAuthor() != o.getAuthor()) {
+            return getAuthor().compareTo(o.getAuthor());
         }
-
-        return getTitle().compareTo(o.getTitle());
+        return getYear() == o.getYear() ? 0 : (getYear() < o.getYear() ? -1 : 1);
     }
 
     @Override

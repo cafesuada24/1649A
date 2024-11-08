@@ -10,11 +10,14 @@ import java.util.function.Function;
 
 import de.vandermeer.asciitable.AsciiTable;
 
+import com.hahsm.algorithm.MergeSort;
 import com.hahsm.algorithm.Search;
+import com.hahsm.algorithm.SortStrategy;
 import com.hahsm.book.model.Book;
 import com.hahsm.book.repository.BookRepository;
 import com.hahsm.cart.BookCart;
 import com.hahsm.common.ConfigLoader;
+import com.hahsm.common.Util;
 import com.hahsm.common.database.DatabaseConstants;
 import com.hahsm.common.ioconsole.ConsoleHelper;
 import com.hahsm.common.ioconsole.MenuBuilder;
@@ -42,11 +45,11 @@ public class App {
         final Repository<Book, Integer> bookRepo = new BookRepository(connectionManager);
         final Repository<Order, Integer> orderRepo = new OrderRepository(connectionManager, bookRepo);
         final OrderProcessingSystem ops = new OrderProcessingSystem(orderRepo);
-        // final OrderProcessingSystem ops = new OrderProcessingSystem(orderRepo,
-        // orderBookRepo, bookRepo);
         final Scanner sc = new Scanner(System.in);
         final FrameManager fm = new FrameManager();
-        fm.addFrame(mainMenu(sc, orderRepo, bookRepo, ops));
+        final SortStrategy sorter = new MergeSort();
+
+        fm.addFrame(mainMenu(sc, orderRepo, bookRepo, ops, sorter));
 
         sc.close();
     }
@@ -61,7 +64,7 @@ public class App {
     }
 
     private static Frame mainMenu(final Scanner sc, final Repository<Order, Integer> orderRepo,
-            final Repository<Book, Integer> bookRepo, final OrderProcessingSystem ops) {
+            final Repository<Book, Integer> bookRepo, final OrderProcessingSystem ops, final SortStrategy sorter) {
         return new Frame((FrameManager fm) -> {
             final int option = ConsoleHelper.getFromMenu(
                     sc,
@@ -71,13 +74,13 @@ public class App {
 
             switch (option) {
                 case 1:
-                    fm.addFrame(createOder(sc, orderRepo, bookRepo));
+                    fm.addFrame(createOder(sc, orderRepo, bookRepo, sorter));
                     break;
                 case 2:
                     fm.addFrame(showAllOrders(ops));
                     break;
                 case 3:
-                    fm.addFrame(trackOrder(sc, orderRepo));
+                    fm.addFrame(trackOrder(sc, orderRepo, sorter));
                     break;
                 case 4:
                     System.out.println("Good bye!");
@@ -93,28 +96,37 @@ public class App {
         });
     }
 
-    private static Frame trackOrder(final Scanner sc, final Repository<Order, Integer> orderRepo) {
+    private static Frame trackOrder(final Scanner sc, final Repository<Order, Integer> orderRepo, final SortStrategy sorter) {
         return new Frame((fm) -> {
+            ConsoleHelper.printSeparator();
             final int id = ConsoleHelper.getInteger(sc, "Please enter order id, type 0 to ignore: ");
 
             List<Order> searchResult = new ArrayList<>();
-
             if (id != 0) {
                 final var res = orderRepo.getByID(id);
                 if (res.isPresent()) {
                     searchResult.add(res.get());
                 }
             } else {
-                final String customerName = ConsoleHelper.getString(sc, "Enter your name: ");
-                final String customerAddress = ConsoleHelper.getString(sc, "Enter your address: ");
-                final String customerPhone = ConsoleHelper.getString(sc, "Enter your phone number: ");
+                final String customerName = ConsoleHelper.getOptionalString(sc, "Enter your name: ");
+                final String customerAddress = ConsoleHelper.getOptionalString(sc, "Enter your address: ");
+                final String customerPhone = ConsoleHelper.getOptionalString(sc, "Enter your phone number: ");
 
                 searchResult = orderRepo.getByFilter((order) -> {
-                    return order.getCustomerName() != null && order.getCustomerName().startsWith(customerName);
+                    if (order.getCustomerName() == null) {
+                        return customerName == null || customerName.isEmpty();
+                    }
+                    return order.getCustomerName().startsWith(customerName);
                 }).filter((order) -> {
-                    return order.getCustomerAddress() != null && order.getCustomerAddress().startsWith(customerAddress);
+                    if (order.getCustomerAddress() == null) {
+                        return customerAddress == null || customerAddress.isEmpty();
+                    }
+                    return order.getCustomerAddress().startsWith(customerAddress);
                 }).filter((order) -> {
-                    return order.getCustomerPhone() != null && order.getCustomerPhone().equals(customerPhone);
+                    if (order.getCustomerPhone() == null) {
+                        return customerPhone == null || customerPhone.isEmpty();
+                    }
+                    return order.getCustomerPhone().startsWith(customerPhone);
                 });
             }
 
@@ -124,11 +136,11 @@ public class App {
             }
 
             System.out.println("Found " + searchResult.size() + " orders");
+            ConsoleHelper.printSeparator();
             for (Order ord : searchResult) {
+                sorter.sort(ord.getOrderBooks(), (x, y) -> x.getBook().compareTo(y.getBook()));
                 System.out.println(ord);
-                for (final var ob : ord.getOrderBooks()) {
-                    System.out.println("\t" + ob.getBook());
-                }
+                ConsoleHelper.printSeparator();
             }
         });
     }
@@ -136,16 +148,17 @@ public class App {
     private static Frame createOder(
             final Scanner sc,
             final Repository<Order, Integer> orderRepo,
-            final Repository<Book, Integer> bookRepo) {
+            final Repository<Book, Integer> bookRepo,
+            final SortStrategy sorter) {
         return new Frame((fm) -> {
             final String table = bookRepo.toString();
-            BookCart cart = new BookCart();
+            BookCart cart = new BookCart(sorter);
 
             boolean loop = true;
             while (loop) {
                 ConsoleHelper.Clear();
                 System.out.println(table);
-                System.out.println("=".repeat(100));
+                ConsoleHelper.printSeparator();
 
                 System.out.println("Your current card: ");
                 System.out.println(cart.toString());
@@ -160,6 +173,9 @@ public class App {
 
                 final int qty = ConsoleHelper.getInteger(sc, "Enter quantity: ", 0, Integer.MAX_VALUE);
                 cart.addItem(id, book.get(), qty);
+
+                System.out.println("Your current card: ");
+                System.out.println(cart.toString());
 
                 loop = ConsoleHelper.getYesNoInput(sc,
                         "Continue to add? Enter 'y' for yes or 'n' for no: ");
@@ -176,7 +192,7 @@ public class App {
             final Order order = cart.toOrder();
             orderRepo.insert(order);
 
-            System.out.println("=".repeat(100));
+            ConsoleHelper.printSeparator();
 
             System.out.println("Your order is created with id: " + order.getId());
         });

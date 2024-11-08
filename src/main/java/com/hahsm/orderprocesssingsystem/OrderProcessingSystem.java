@@ -24,25 +24,14 @@ import com.hahsm.order.model.OrderBook;
 import de.vandermeer.asciitable.AsciiTable;
 
 public class OrderProcessingSystem implements Observer<Order> {
-    // private Queue<Order> orderQueue;
     private final Repository<Order, Integer> orderRepo;
-    // private final Repository<OrderBook, Pair<Integer, Integer>> orderBookRepo;
-    // private final Repository<Book, Integer> bookRepo;
-    // private final SortStrategy sorter;
-
-    // private final List<Order> orders;
-    // private final List<OrderBook> orderBooks;
-    // private final List<Book> books;
 
     private final PriorityQueue<Order> pq;
 
     public OrderProcessingSystem(
             final Repository<Order, Integer> orderRepo
-    // final Repository<OrderBook, Pair<Integer, Integer>> orderBookRepo,
-    // final Repository<Book, Integer> bookRepo) {
     ) {
         assert orderRepo != null;
-        // this(orderRepo, orderBookRepo, bookRepo, new MergeSort());
         this.orderRepo = orderRepo;
         this.orderRepo.registerObserver(this);
         pq = new PriorityQueue<Order>(Comparator.naturalOrder());
@@ -77,6 +66,7 @@ public class OrderProcessingSystem implements Observer<Order> {
                     order.getOrderTime().format(formatter),
                     order.getEstimatedDeliveryTime().format(formatter),
                     order.getStatus().name());
+            System.out.println(order.getCustomerAddress());
             at.addRule();
         }
 

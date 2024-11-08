@@ -4,9 +4,11 @@ import java.sql.Date;
 import java.sql.Time;
 import java.time.LocalDateTime;
 
+import com.hahsm.algorithm.SortStrategy;
 import com.hahsm.book.model.Book;
 import com.hahsm.common.type.Pair;
 import com.hahsm.datastructure.HashMap;
+import com.hahsm.datastructure.adt.List;
 import com.hahsm.order.model.Order;
 import com.hahsm.order.model.OrderBook;
 
@@ -15,6 +17,11 @@ public class BookCart {
     private String customerName;
     private String customerAddress;
     private String customerPhone;
+    private SortStrategy sorter;
+
+    public BookCart(SortStrategy sorter) {
+        this.sorter = sorter;
+    }
 
     public void addItem(int id, Book book, int qty) {
         if (cart.containsKey(id)) {
@@ -30,11 +37,14 @@ public class BookCart {
         if (cart.isEmpty()) {
             return "\tempty";
         }
+        final var items = cart.values();
+        sorter.sort(items, (a, b) -> a.getSecond().compareTo(b.getSecond()));
+
         StringBuilder builder = new StringBuilder();
-        cart.forEach((key, val) -> {
-            builder.append("\t").append(val.getSecond().toString());
-            builder.append("\n\t\tqty: ").append(val.getFirst()).append('\n');
-        });
+        items.forEach((item) -> {
+            builder.append("\t").append(item.getSecond().toString());
+            builder.append("\n\t\tqty: ").append(item.getFirst()).append('\n');
+        });;
         return builder.toString();
     }
 

@@ -100,8 +100,7 @@ public final class ConsoleHelper {
     public static String getString(final Scanner scanner, final String prompt) {
         String input = null;
         while (input == null || input.trim().isEmpty()) {
-            System.out.print(prompt);
-            input = scanner.nextLine();
+            input = getOptionalString(scanner, prompt);
 
             if (input == null || input.trim().isEmpty()) {
                 System.out.println("Input cannot be null or empty. Please try again.");
@@ -111,6 +110,11 @@ public final class ConsoleHelper {
         return input.trim();
     }
 
+    public static String getOptionalString(final Scanner scanner, final String prompt) {
+        System.out.print(prompt);
+        return scanner.nextLine().trim();
+    }
+
     public static void waitForEnter(final String message) {
         System.out.println(message);
         try {
@@ -118,5 +122,9 @@ public final class ConsoleHelper {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    public static void printSeparator() {
+        System.out.println("=".repeat(100));
     }
 }

@@ -44,8 +44,7 @@ public class OrderRepository implements Repository<Order, Integer> {
 
 	@Override
 	public List<Order> getByFilter(Predicate<Order> filter) {
-		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException("Unimplemented method 'getByFilter'");
+        return orders.values().filter(filter);
 	}
 
     @Override
@@ -90,9 +89,6 @@ public class OrderRepository implements Repository<Order, Integer> {
     @Override
     public Order insert(final Order newEntity) {
         final String sql = "INSERT INTO " + DatabaseConstants.ORDER_TABLE + '(' +
-        // DatabaseConstants.OrderColumns.ID + ',' +
-                //DatabaseConstants.OrderColumns.USER_ID + ',' +
-                //DatabaseConstants.OrderColumns.ORDER_DATE + ',' +
                 DatabaseConstants.OrderColumns.ORDER_TIME + ',' +
                 DatabaseConstants.OrderColumns.ESTIMATED_DELIVERY_TIME + ',' +
                 DatabaseConstants.OrderColumns.CUSTOMER_NAME + ',' +
@@ -165,9 +161,6 @@ public class OrderRepository implements Repository<Order, Integer> {
         assert orders != null;
 
         final String sql = "INSERT INTO " + DatabaseConstants.ORDER_TABLE + '(' +
-        // DatabaseConstants.OrderColumns.ID + ',' +
-                //DatabaseConstants.OrderColumns.USER_ID + ',' +
-                //DatabaseConstants.OrderColumns.ORDER_DATE + ',' +
                 DatabaseConstants.OrderColumns.ORDER_TIME + ',' +
                 DatabaseConstants.OrderColumns.ESTIMATED_DELIVERY_TIME + ',' +
                 DatabaseConstants.OrderColumns.CUSTOMER_NAME + ',' +
@@ -227,26 +220,6 @@ public class OrderRepository implements Repository<Order, Integer> {
 
         return entities;
     }
-
-    //@Override
-    //public String toString() {
-    //    AsciiTable tb = new AsciiTable();
-    //
-    //    tb.addRule();
-    //    tb.addRow(
-    //            DatabaseConstants.BookColumns.ID,
-    //            DatabaseConstants.BookColumns.TITLE,
-    //            DatabaseConstants.BookColumns.AUTHOR,
-    //            DatabaseConstants.BookColumns.YEAR);
-    //    tb.addRule();
-    //
-    //    for (int i = 0; i < books.size(); ++i) {
-    //        Book book = books.get(i);
-    //        tb.addRow(book.getID(), book.getTitle(), book.getAuthor(), book.getYear());
-    //    }
-    //    tb.addRule();
-    //    return tb.render();
-    //}
 
     private void load() {
         assert orders != null;
