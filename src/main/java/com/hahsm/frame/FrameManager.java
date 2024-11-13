@@ -14,6 +14,10 @@ public class FrameManager {
         assert frames != null;
         frame.setFrameManager(this);
         frames.add(frame);
+    }
+
+    public void addFrameAndDisplay(final Frame frame) {
+        addFrame(frame);
         frame.display();
     }
 
