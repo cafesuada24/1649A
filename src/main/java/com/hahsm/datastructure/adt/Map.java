@@ -1,7 +1,6 @@
 package com.hahsm.datastructure.adt;
 
 import java.util.function.BiConsumer;
-import java.util.function.Consumer;
 
 public interface Map<K, V> extends Iterable<Map.Entry<K, V>> {
     public static interface Entry<K, V> {

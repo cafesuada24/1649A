@@ -1,6 +1,6 @@
 package com.hahsm.datastructure.adt;
 
-public interface Deque<E> extends Queue<E> {
+public interface Deque<E> extends Queue<E>, Stack<E> {
     void addFirst(E element);
     E removeFirst();
 
