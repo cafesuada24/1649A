@@ -2,40 +2,26 @@ package com.hahsm;
 
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.Comparator;
 import java.util.Optional;
 import java.util.Scanner;
-import java.util.function.Consumer;
-import java.util.function.Function;
-
-import de.vandermeer.asciitable.AsciiTable;
 
 import com.hahsm.algorithm.MergeSort;
-import com.hahsm.algorithm.Search;
 import com.hahsm.algorithm.SortStrategy;
 import com.hahsm.book.model.Book;
 import com.hahsm.book.repository.BookRepository;
 import com.hahsm.cart.BookCart;
 import com.hahsm.common.ConfigLoader;
-import com.hahsm.common.Util;
-import com.hahsm.common.database.DatabaseConstants;
 import com.hahsm.common.ioconsole.ConsoleHelper;
-import com.hahsm.common.ioconsole.MenuBuilder;
-import com.hahsm.common.type.Pair;
 import com.hahsm.common.type.Repository;
+import com.hahsm.common.type.User;
 import com.hahsm.database.DatabaseConnectionManager;
 import com.hahsm.datastructure.adt.List;
-import com.hahsm.datastructure.adt.Queue;
 import com.hahsm.frame.Frame;
 import com.hahsm.frame.FrameManager;
 import com.hahsm.order.model.Order;
-import com.hahsm.order.model.OrderBook;
-import com.hahsm.order.repository.OrderBookRepository;
 import com.hahsm.order.repository.OrderRepository;
 import com.hahsm.orderprocesssingsystem.OrderProcessingSystem;
 import com.hahsm.datastructure.ArrayList;
-import com.hahsm.datastructure.PriorityQueue;
-import com.hahsm.datastructure.HashMap;
 
 public class App {
 
@@ -47,11 +33,43 @@ public class App {
         final OrderProcessingSystem ops = new OrderProcessingSystem(orderRepo);
         final Scanner sc = new Scanner(System.in);
         final FrameManager fm = new FrameManager();
-        final SortStrategy sorter = new MergeSort();
+        final SortStrategy sortalgo = new MergeSort();
 
-        fm.addFrame(mainMenu(sc, orderRepo, bookRepo, ops, sorter));
+        final App app = new App(connectionManager, bookRepo, orderRepo, ops, sc, fm, sortalgo);
+
+        app.start();
 
         sc.close();
+    }
+
+    private final DatabaseConnectionManager connectionManager;
+    private final Repository<Book, Integer> bookRepo;
+    private final Repository<Order, Integer> orderRepo;
+    private final OrderProcessingSystem ops;
+    private final Scanner sc;
+    private final FrameManager fm;
+    private final SortStrategy sortAlgo;
+    private User currentUser;
+
+    public App(
+            final DatabaseConnectionManager connectionManager,
+            final Repository<Book, Integer> bookRepo,
+            final Repository<Order, Integer> orderRepo,
+            final OrderProcessingSystem ops,
+            final Scanner sc,
+            final FrameManager fm,
+            final SortStrategy sortAlgo) {
+        this.connectionManager = connectionManager;
+        this.bookRepo = bookRepo;
+        this.orderRepo = orderRepo;
+        this.ops = ops;
+        this.sc = sc;
+        this.fm = fm;
+        this.sortAlgo = sortAlgo;
+    }
+
+    public void start() {
+        fm.addFrameAndDisplay(createLoginMenuFrame());
     }
 
     private static void init() {
@@ -63,26 +81,23 @@ public class App {
         }
     }
 
-    private static Frame mainMenu(final Scanner sc, final Repository<Order, Integer> orderRepo,
-            final Repository<Book, Integer> bookRepo, final OrderProcessingSystem ops, final SortStrategy sorter) {
-        return new Frame((FrameManager fm) -> {
+    private Frame createLoginMenuFrame() {
+        return new Frame((fm) -> {
             final int option = ConsoleHelper.getFromMenu(
                     sc,
-                    "Please enter your option",
-                    new ArrayList<>("Create Order", "Show all orders", "Track Order", "Exit"),
+                    "What role are you?",
+                    new ArrayList<>("User", "Admin", "Exit"),
                     1);
-
+            ConsoleHelper.printSeparator();
             switch (option) {
                 case 1:
-                    fm.addFrame(createOder(sc, orderRepo, bookRepo, sorter));
+                    fm.addFrame(createUserMainMenuFrame());
+                    fm.addFrameAndDisplay(createUserInfoEditFrame());
                     break;
                 case 2:
-                    fm.addFrame(showAllOrders(ops));
+                    fm.addFrameAndDisplay(createAdminMainMenu());
                     break;
                 case 3:
-                    fm.addFrame(trackOrder(sc, orderRepo, sorter));
-                    break;
-                case 4:
                     System.out.println("Good bye!");
                     System.exit(0);
                     return;
@@ -90,14 +105,115 @@ public class App {
         });
     }
 
-    private static Frame showAllOrders(final OrderProcessingSystem ops) {
-        return new Frame((FrameManager fm) -> {
-            System.out.println(ops.toString());
+    private Frame createUserInfoEditFrame() {
+        return new Frame((_) -> {
+            if (currentUser == null) {
+                final String customerName = ConsoleHelper.getString(sc, "Enter your name: ");
+                final String customerAddress = ConsoleHelper.getString(sc, "Enter your address: ");
+                final String customerPhone = ConsoleHelper.getString(sc, "Enter your phone number: ");
+                currentUser = new User(customerName, customerAddress, customerPhone);
+                return;
+            }
+
+            final String customerName = ConsoleHelper.getOptionalString(sc,
+                    "Enter your name (press enter if no change): ");
+            final String customerAddress = ConsoleHelper.getOptionalString(sc,
+                    "Enter your address (press enter if no change): ");
+            final String customerPhone = ConsoleHelper.getOptionalString(sc,
+                    "Enter your phone number (press enter if no change): ");
+            if (customerName != null && !customerName.isBlank()) {
+                currentUser.name = customerName;
+            }
+            if (customerAddress != null && !customerAddress.isBlank()) {
+                currentUser.address = customerAddress;
+            }
+            if (customerPhone != null && !customerPhone.isBlank()) {
+                currentUser.phone = customerPhone;
+            }
+
         });
     }
 
-    private static Frame trackOrder(final Scanner sc, final Repository<Order, Integer> orderRepo, final SortStrategy sorter) {
+    private Frame createUserMainMenuFrame() {
+        return new Frame((FrameManager fm) -> {
+            final int option = ConsoleHelper.getFromMenu(
+                    sc,
+                    "Please enter your option",
+                    new ArrayList<>("Create Order", "Show your orders", "Search by ID", "Change your information",
+                            "Exit"),
+                    1);
+
+            switch (option) {
+                case 1:
+                    fm.addFrameAndDisplay(createCreateOrderFrame());
+                    break;
+                case 2:
+                    fm.addFrameAndDisplay(createShowUserOrdersFrame());
+                    break;
+                case 3:
+                    fm.addFrameAndDisplay(createSearchOrderByIdFrame());
+                    break;
+                case 4:
+                    fm.addFrameAndDisplay(createUserInfoEditFrame());
+                    break;
+                default:
+                    System.out.println("Good bye!");
+                    System.exit(0);
+                    return;
+            }
+        });
+    }
+
+    private Frame createAdminMainMenu() {
         return new Frame((fm) -> {
+            final int option = ConsoleHelper.getFromMenu(
+                    sc,
+                    "Please enter your option",
+                    new ArrayList<>("List all order", "Filter order", "Exit"),
+                    1);
+
+            switch (option) {
+                case 1:
+                    fm.addFrameAndDisplay(createListAllOrdersFrame());
+                    break;
+                case 2:
+                    fm.addFrameAndDisplay(createSearchOrderFrame());
+                default:
+                    System.out.println("Good bye!");
+                    System.exit(0);
+                    return;
+            }
+
+        });
+    }
+
+    private Frame createShowUserOrdersFrame() {
+        return new Frame((_) -> {
+            final List<Order> orders = orderRepo
+                    .getByFilter((order) -> order.getCustomerName().equals(currentUser.name) &&
+                            order.getCustomerAddress().equals(currentUser.address) &&
+                            order.getCustomerPhone().equals(currentUser.phone));
+
+            System.out.println("You have " + orders.size() + " orders");
+            printOrders(orders);
+        });
+    }
+
+    private Frame createSearchOrderByIdFrame() {
+        return new Frame((_) -> {
+            final int id = ConsoleHelper.getInteger(sc, "Please enter order id: ");
+
+            final var res = orderRepo.getByID(id);
+            if (res.isEmpty()) {
+                System.out.println("No order with id " + id + " found!");
+            } else {
+                System.out.println(res);
+            }
+        });
+    }
+
+    private Frame createSearchOrderFrame() {
+        return new Frame((_) -> {
             ConsoleHelper.printSeparator();
             final int id = ConsoleHelper.getInteger(sc, "Please enter order id, type 0 to ignore: ");
 
@@ -131,28 +247,20 @@ public class App {
             }
 
             if (searchResult.isEmpty()) {
-                System.out.println("Cannot find your order");
+                System.out.println("Cannot find order matching your information");
                 return;
             }
 
             System.out.println("Found " + searchResult.size() + " orders");
             ConsoleHelper.printSeparator();
-            for (Order ord : searchResult) {
-                sorter.sort(ord.getOrderBooks(), (x, y) -> x.getBook().compareTo(y.getBook()));
-                System.out.println(ord);
-                ConsoleHelper.printSeparator();
-            }
+            printOrders(searchResult);
         });
     }
 
-    private static Frame createOder(
-            final Scanner sc,
-            final Repository<Order, Integer> orderRepo,
-            final Repository<Book, Integer> bookRepo,
-            final SortStrategy sorter) {
-        return new Frame((fm) -> {
+    private Frame createCreateOrderFrame() {
+        return new Frame((_) -> {
             final String table = bookRepo.toString();
-            BookCart cart = new BookCart(sorter);
+            final BookCart cart = new BookCart(sortAlgo, currentUser);
 
             boolean loop = true;
             while (loop) {
@@ -183,12 +291,6 @@ public class App {
 
             System.out.println("=".repeat(100));
 
-            final String customerName = ConsoleHelper.getString(sc, "Enter your name: ");
-            final String customerAddress = ConsoleHelper.getString(sc, "Enter your address: ");
-            final String customerPhone = ConsoleHelper.getString(sc, "Enter your phone number: ");
-
-            cart.setCustomerInformation(customerName, customerAddress, customerPhone);
-
             final Order order = cart.toOrder();
             orderRepo.insert(order);
 
@@ -196,5 +298,22 @@ public class App {
 
             System.out.println("Your order is created with id: " + order.getId());
         });
+    }
+
+    private Frame createListAllOrdersFrame() {
+        return new Frame((_) -> {
+            System.out.println(ops);
+        });
+    }
+
+    // -----------------HELPERS----------------------------//
+
+    private void printOrders(final List<Order> orders) {
+        ConsoleHelper.printSeparator();
+        for (Order ord : orders) {
+            sortAlgo.sort(ord.getOrderBooks(), (x, y) -> x.getBook().compareTo(y.getBook()));
+            System.out.println(ord);
+            ConsoleHelper.printSeparator();
+        }
     }
 }

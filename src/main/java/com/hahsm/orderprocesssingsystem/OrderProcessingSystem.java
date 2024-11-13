@@ -1,25 +1,12 @@
 package com.hahsm.orderprocesssingsystem;
 
-import com.hahsm.datastructure.adt.List;
-import com.hahsm.datastructure.adt.Queue;
-
 import java.time.format.DateTimeFormatter;
 import java.util.Comparator;
-import java.util.Optional;
 
-import com.hahsm.algorithm.LinearSearch;
-import com.hahsm.algorithm.MergeSort;
-import com.hahsm.algorithm.Search;
-import com.hahsm.algorithm.SortStrategy;
-import com.hahsm.book.model.Book;
 import com.hahsm.common.type.Observer;
-import com.hahsm.common.type.Pair;
 import com.hahsm.common.type.Repository;
-import com.hahsm.datastructure.ArrayList;
-import com.hahsm.datastructure.LinkedList;
 import com.hahsm.datastructure.PriorityQueue;
 import com.hahsm.order.model.Order;
-import com.hahsm.order.model.OrderBook;
 
 import de.vandermeer.asciitable.AsciiTable;
 
@@ -47,7 +34,7 @@ public class OrderProcessingSystem implements Observer<Order> {
 
     @Override
     public String toString() {
-        AsciiTable at = new AsciiTable();
+        final AsciiTable at = new AsciiTable();
 
         // Define the header row
         at.addRule();
@@ -66,7 +53,6 @@ public class OrderProcessingSystem implements Observer<Order> {
                     order.getOrderTime().format(formatter),
                     order.getEstimatedDeliveryTime().format(formatter),
                     order.getStatus().name());
-            System.out.println(order.getCustomerAddress());
             at.addRule();
         }
 

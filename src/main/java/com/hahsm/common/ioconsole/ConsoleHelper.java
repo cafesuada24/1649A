@@ -1,27 +1,12 @@
 package com.hahsm.common.ioconsole;
 
 import java.io.IOException;
-import java.util.InputMismatchException;
 import java.util.Scanner;
 
 import com.hahsm.datastructure.adt.List;
 
 public final class ConsoleHelper {
     public static void Clear() {
-        // try {
-        // if (System.getProperty("os.name").contains("Windows")) {
-        // new ProcessBuilder("cmd", "/c", "cls").inheritIO().start().waitFor();
-        // } else {
-        // new ProcessBuilder("clear").inheritIO().start().waitFor();
-        // }
-        // } catch (Exception e) {
-        // e.printStackTrace();
-        // }
-        // try {
-        // new ProcessBuilder("cmd", "/c", "cls").inheritIO().start().waitFor();
-        // } catch (IOException | InterruptedException e ) {
-        // e.printStackTrace();
-        // }
         try {
             final String os = System.getProperty("os.name");
             if (os.contains("Windows")) {
