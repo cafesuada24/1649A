@@ -64,9 +64,9 @@ public class Order implements Comparable<Order> {
     public Order(int id, long orderTime, long estimatedDeliveryTime, String customerName,
             String customerAddress, String customerPhone, String status, List<OrderBook> orderBooks) {
         setId(id);
-        setOrderTime(LocalDateTime.ofInstant(Instant.ofEpochMilli(orderTime), ZoneOffset.UTC));
+        setOrderTime(LocalDateTime.ofInstant(Instant.ofEpochSecond(orderTime), ZoneOffset.UTC));
         if (estimatedDeliveryTime > orderTime) {
-            setEstimatedDeliveryTime(LocalDateTime.ofInstant(Instant.ofEpochMilli(estimatedDeliveryTime), ZoneOffset.UTC));
+            setEstimatedDeliveryTime(LocalDateTime.ofInstant(Instant.ofEpochSecond(estimatedDeliveryTime), ZoneOffset.UTC));
         }
         setCustomerName(customerName);
         setCustomerAddress(customerAddress);
