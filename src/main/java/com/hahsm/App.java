@@ -12,12 +12,15 @@ import com.hahsm.book.repository.BookRepository;
 import com.hahsm.cart.BookCart;
 import com.hahsm.common.ConfigLoader;
 import com.hahsm.common.ioconsole.ConsoleHelper;
+import com.hahsm.common.type.Graph;
 import com.hahsm.common.type.Repository;
 import com.hahsm.common.type.User;
 import com.hahsm.database.DatabaseConnectionManager;
 import com.hahsm.datastructure.adt.List;
 import com.hahsm.frame.Frame;
 import com.hahsm.frame.FrameManager;
+import com.hahsm.location.model.Location;
+import com.hahsm.location.repository.LocationRepository;
 import com.hahsm.order.model.Order;
 import com.hahsm.order.repository.OrderRepository;
 import com.hahsm.orderprocesssingsystem.OrderProcessingSystem;
@@ -30,46 +33,18 @@ public class App {
         final DatabaseConnectionManager connectionManager = new DatabaseConnectionManager("main");
         final Repository<Book, Integer> bookRepo = new BookRepository(connectionManager);
         final Repository<Order, Integer> orderRepo = new OrderRepository(connectionManager, bookRepo);
-        final OrderProcessingSystem ops = new OrderProcessingSystem(orderRepo);
+        final Repository<Location, Integer> locationRepo = new LocationRepository();
         final Scanner sc = new Scanner(System.in);
         final FrameManager fm = new FrameManager();
         final SortStrategy sortalgo = new MergeSort();
+        //final Graph cityGraph = createPseudoMap();
+        final OrderProcessingSystem ops = new OrderProcessingSystem(orderRepo, createPseudoMap());
 
-        final App app = new App(connectionManager, bookRepo, orderRepo, ops, sc, fm, sortalgo);
+        final App app = new App(connectionManager, bookRepo, orderRepo, ops, locationRepo, sc, fm, sortalgo);
 
         app.start();
 
         sc.close();
-    }
-
-    private final DatabaseConnectionManager connectionManager;
-    private final Repository<Book, Integer> bookRepo;
-    private final Repository<Order, Integer> orderRepo;
-    private final OrderProcessingSystem ops;
-    private final Scanner sc;
-    private final FrameManager fm;
-    private final SortStrategy sortAlgo;
-    private User currentUser;
-
-    public App(
-            final DatabaseConnectionManager connectionManager,
-            final Repository<Book, Integer> bookRepo,
-            final Repository<Order, Integer> orderRepo,
-            final OrderProcessingSystem ops,
-            final Scanner sc,
-            final FrameManager fm,
-            final SortStrategy sortAlgo) {
-        this.connectionManager = connectionManager;
-        this.bookRepo = bookRepo;
-        this.orderRepo = orderRepo;
-        this.ops = ops;
-        this.sc = sc;
-        this.fm = fm;
-        this.sortAlgo = sortAlgo;
-    }
-
-    public void start() {
-        fm.addFrameAndDisplay(createLoginMenuFrame());
     }
 
     private static void init() {
@@ -79,6 +54,52 @@ public class App {
             e.printStackTrace();
             System.exit(1);
         }
+    }
+
+    private static Graph createPseudoMap() {
+        final Graph cityGraph = new Graph();
+        cityGraph.addEdge("Hanoi", "Haiphong", 120.0);
+        cityGraph.addEdge("Hanoi", "Bac Ninh", 35.0);
+        cityGraph.addEdge("Hanoi", "Hai Duong", 57.0);
+        cityGraph.addEdge("Hanoi", "Vinh Phuc", 75.0);
+        cityGraph.addEdge("Haiphong", "Bac Ninh", 85.0);
+        cityGraph.addEdge("Bac Ninh", "Hai Duong", 40.0);
+        return cityGraph;
+    }
+
+    private final DatabaseConnectionManager connectionManager;
+    private final Repository<Book, Integer> bookRepo;
+    private final Repository<Order, Integer> orderRepo;
+    private final Repository<Location, Integer> locationRepo;
+    private final OrderProcessingSystem ops;
+    private final Scanner sc;
+    private final FrameManager fm;
+    private final SortStrategy sortAlgo;
+    //private final Graph cityGraph;
+    private User currentUser;
+
+    public App(
+            final DatabaseConnectionManager connectionManager,
+            final Repository<Book, Integer> bookRepo,
+            final Repository<Order, Integer> orderRepo,
+            final OrderProcessingSystem ops,
+            final Repository<Location, Integer> locationRepo,
+            final Scanner sc,
+            final FrameManager fm,
+            //final Graph cityGraph,
+            final SortStrategy sortAlgo) {
+        this.connectionManager = connectionManager;
+        this.bookRepo = bookRepo;
+        this.orderRepo = orderRepo;
+        this.locationRepo = locationRepo;
+        this.ops = ops;
+        this.sc = sc;
+        this.fm = fm;
+        this.sortAlgo = sortAlgo;
+    }
+
+    public void start() {
+        fm.addFrameAndDisplay(createLoginMenuFrame());
     }
 
     private Frame createLoginMenuFrame() {
@@ -111,7 +132,8 @@ public class App {
         return new Frame((_) -> {
             if (currentUser == null) {
                 final String customerName = ConsoleHelper.getString(sc, "Enter your name: ");
-                final String customerAddress = ConsoleHelper.getString(sc, "Enter your address: ");
+                //final String customerAddress = ConsoleHelper.getString(sc, "Enter your address: ");
+                final String customerAddress = getAddress(false);
                 final String customerPhone = ConsoleHelper.getString(sc, "Enter your phone number: ");
                 currentUser = new User(customerName, customerAddress, customerPhone);
                 return;
@@ -119,8 +141,9 @@ public class App {
 
             final String customerName = ConsoleHelper.getOptionalString(sc,
                     "Enter your name (press enter if no change): ");
-            final String customerAddress = ConsoleHelper.getOptionalString(sc,
-                    "Enter your address (press enter if no change): ");
+            //final String customerAddress = ConsoleHelper.getOptionalString(sc,
+            //        "Enter your address (press enter if no change): ");
+            final String customerAddress = getAddress(true);
             final String customerPhone = ConsoleHelper.getOptionalString(sc,
                     "Enter your phone number (press enter if no change): ");
             if (customerName != null && !customerName.isBlank()) {
@@ -352,9 +375,8 @@ public class App {
                 default:
                     break;
             }
-
-            order.setStatus(status);            
-            orderRepo.update(order);
+            ops.updateOrderStatus(order, status);
+            
             System.out.println("Order id " + order.getId() + ", status has been updated to " + status); 
         });
     }
@@ -368,5 +390,18 @@ public class App {
             System.out.println(ord);
             ConsoleHelper.printSeparator();
         }
+    }
+
+    private String getAddress(boolean allowNoChange) {
+        final var locations = locationRepo.getAll();
+        final List<Object> options  = new ArrayList<>(locations.size() + (allowNoChange ? 1 : 0));
+        if (allowNoChange) {
+            options.add("No change");
+        }
+        for (final var loc : locations) {
+            options.add(loc.getName());
+        }
+        int addressId = ConsoleHelper.getFromMenu(sc, "Choose the address: ", options, 1);
+        return (allowNoChange && addressId == 1) ? "" : options.get(addressId - 1).toString();
     }
 }
