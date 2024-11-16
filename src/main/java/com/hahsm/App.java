@@ -105,6 +105,8 @@ public class App {
         });
     }
 
+    // USER
+
     private Frame createUserInfoEditFrame() {
         return new Frame((_) -> {
             if (currentUser == null) {
@@ -164,29 +166,6 @@ public class App {
         });
     }
 
-    private Frame createAdminMainMenu() {
-        return new Frame((fm) -> {
-            final int option = ConsoleHelper.getFromMenu(
-                    sc,
-                    "Please enter your option",
-                    new ArrayList<>("List all order", "Filter order", "Exit"),
-                    1);
-
-            switch (option) {
-                case 1:
-                    fm.addFrameAndDisplay(createListAllOrdersFrame());
-                    break;
-                case 2:
-                    fm.addFrameAndDisplay(createSearchOrderFrame());
-                default:
-                    System.out.println("Good bye!");
-                    System.exit(0);
-                    return;
-            }
-
-        });
-    }
-
     private Frame createShowUserOrdersFrame() {
         return new Frame((_) -> {
             final List<Order> orders = orderRepo
@@ -209,6 +188,83 @@ public class App {
             } else {
                 System.out.println(res);
             }
+        });
+    }
+
+    private Frame createCreateOrderFrame() {
+        return new Frame((_) -> {
+            final String table = bookRepo.toString();
+            final BookCart cart = new BookCart(sortAlgo, currentUser);
+
+            boolean loop = true;
+            while (loop) {
+                ConsoleHelper.Clear();
+                System.out.println(table);
+                ConsoleHelper.printSeparator();
+
+                System.out.println("Your current card: ");
+                System.out.println(cart.toString());
+
+                final int id = ConsoleHelper.getInteger(sc, "Please enter book id: ");
+                final Optional<Book> book = bookRepo.getByID(id);
+
+                if (book.isEmpty()) {
+                    System.err.println("Invalid id");
+                    continue;
+                }
+
+                final int qty = ConsoleHelper.getInteger(sc, "Enter quantity: ", 0, Integer.MAX_VALUE);
+                cart.addItem(id, book.get(), qty);
+
+                System.out.println("Your current card: ");
+                System.out.println(cart.toString());
+
+                loop = ConsoleHelper.getYesNoInput(sc,
+                        "Continue to add? Enter 'y' for yes or 'n' for no: ");
+            }
+
+            System.out.println("=".repeat(100));
+
+            final Order order = cart.toOrder();
+            orderRepo.insert(order);
+
+            ConsoleHelper.printSeparator();
+
+            System.out.println("Your order is created with id: " + order.getId());
+        });
+    }
+
+    // ADMIN
+
+    private Frame createAdminMainMenu() {
+        return new Frame((fm) -> {
+            final int option = ConsoleHelper.getFromMenu(
+                    sc,
+                    "Please enter your option",
+                    new ArrayList<>("List all order", "Filter order", "Process order", "Exit"),
+                    1);
+
+            switch (option) {
+                case 1:
+                    fm.addFrameAndDisplay(createListAllOrdersFrame());
+                    break;
+                case 2:
+                    fm.addFrameAndDisplay(createSearchOrderFrame());
+
+                case 3:
+                    fm.addFrameAndDisplay(createProcessOrderFrame());
+                default:
+                    System.out.println("Good bye!");
+                    System.exit(0);
+                    return;
+            }
+
+        });
+    }
+
+    private Frame createListAllOrdersFrame() {
+        return new Frame((_) -> {
+            System.out.println(ops);
         });
     }
 
@@ -257,52 +313,49 @@ public class App {
         });
     }
 
-    private Frame createCreateOrderFrame() {
+    private Frame createProcessOrderFrame() {
         return new Frame((_) -> {
-            final String table = bookRepo.toString();
-            final BookCart cart = new BookCart(sortAlgo, currentUser);
+            System.out.println("ORDERS ():");
+            System.out.println(ops);
 
-            boolean loop = true;
-            while (loop) {
-                ConsoleHelper.Clear();
-                System.out.println(table);
-                ConsoleHelper.printSeparator();
+            Order order = null;
+            while (true) {
+                int id = ConsoleHelper.getInteger(sc, "Enter order id to process: ");
 
-                System.out.println("Your current card: ");
-                System.out.println(cart.toString());
-
-                final int id = ConsoleHelper.getInteger(sc, "Please enter book id: ");
-                final Optional<Book> book = bookRepo.getByID(id);
-
-                if (book.isEmpty()) {
-                    System.err.println("Invalid id");
-                    continue;
+                Optional<Order> result = orderRepo.getByID(id);
+                if (result.isPresent()) {
+                    order = result.get();
+                    break;
                 }
-
-                final int qty = ConsoleHelper.getInteger(sc, "Enter quantity: ", 0, Integer.MAX_VALUE);
-                cart.addItem(id, book.get(), qty);
-
-                System.out.println("Your current card: ");
-                System.out.println(cart.toString());
-
-                loop = ConsoleHelper.getYesNoInput(sc,
-                        "Continue to add? Enter 'y' for yes or 'n' for no: ");
+                System.out.println("Invalid order id, try again.");
+                continue;
             }
 
-            System.out.println("=".repeat(100));
+            final int statusId = ConsoleHelper.getFromMenu(sc,
+                    "Please choose order status to update",
+                    new ArrayList<>("Processing", "Shipped", "Delivered", "Cancelled"),
+                    1);
+            Order.Status status = order.getStatus();
+            switch (statusId) {
+                case 1:
+                    status = Order.Status.PROCESSING; 
+                    break;
+                case 2:
+                    status = Order.Status.SHIPPED; 
+                    break;
+                case 3:
+                    status = Order.Status.DELIVERED; 
+                    break;
+                case 4:
+                    status = Order.Status.CANCELLED; 
+                    break;
+                default:
+                    break;
+            }
 
-            final Order order = cart.toOrder();
-            orderRepo.insert(order);
-
-            ConsoleHelper.printSeparator();
-
-            System.out.println("Your order is created with id: " + order.getId());
-        });
-    }
-
-    private Frame createListAllOrdersFrame() {
-        return new Frame((_) -> {
-            System.out.println(ops);
+            order.setStatus(status);            
+            orderRepo.update(order);
+            System.out.println("Order id " + order.getId() + ", status has been updated to " + status); 
         });
     }
 

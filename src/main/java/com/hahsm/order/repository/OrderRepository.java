@@ -23,13 +23,14 @@ public class OrderRepository implements Repository<Order, Integer> {
      *
      */
     private final DatabaseConnectionManager connectionManager;
-    //private final Repository<Book, Integer> bookRepository;
+    // private final Repository<Book, Integer> bookRepository;
     private final OrderBookRepository orderBookRepository;
     private final HashMap<Integer, Order> orders;
     private final List<Observer<Order>> observers = new ArrayList<>();
 
-    public OrderRepository(final DatabaseConnectionManager connectionManager, final Repository<Book, Integer> bookRepository) {
-        //this.bookRepository = bookRepository;
+    public OrderRepository(final DatabaseConnectionManager connectionManager,
+            final Repository<Book, Integer> bookRepository) {
+        // this.bookRepository = bookRepository;
         this.orderBookRepository = new OrderBookRepository(connectionManager, bookRepository);
         this.connectionManager = connectionManager;
         orders = new HashMap<>();
@@ -42,14 +43,62 @@ public class OrderRepository implements Repository<Order, Integer> {
         return orders.values();
     }
 
-	@Override
-	public List<Order> getByFilter(Predicate<Order> filter) {
+    @Override
+    public List<Order> getByFilter(Predicate<Order> filter) {
         return orders.values().filter(filter);
-	}
+    }
 
     @Override
-    public boolean update(final Order entity) {
-        return false;
+    public boolean update(final Order updatedEntity) {
+        final String sql = "UPDATE " + DatabaseConstants.ORDER_TABLE + " SET " +
+                DatabaseConstants.OrderColumns.ORDER_TIME + " = ?, " +
+                DatabaseConstants.OrderColumns.ESTIMATED_DELIVERY_TIME + " = ?, " +
+                DatabaseConstants.OrderColumns.CUSTOMER_NAME + " = ?, " +
+                DatabaseConstants.OrderColumns.CUSTOMER_ADDRESS + " = ?, " +
+                DatabaseConstants.OrderColumns.CUSTOMER_PHONE + " = ?, " +
+                DatabaseConstants.OrderColumns.STATUS + " = ? " +
+                "WHERE " + DatabaseConstants.OrderColumns.ID + " = ?;";
+
+        try (var conn = connectionManager.getConnection();
+                var pstmt = conn.prepareStatement(sql)) {
+
+            // Set parameters for update
+            pstmt.setLong(1, updatedEntity.getOrderTime().toEpochSecond(ZoneOffset.UTC));
+            pstmt.setLong(2, updatedEntity.getEstimatedDeliveryTime().toEpochSecond(ZoneOffset.UTC));
+            pstmt.setString(3, updatedEntity.getCustomerName());
+            pstmt.setString(4, updatedEntity.getCustomerAddress());
+            pstmt.setString(5, updatedEntity.getCustomerPhone());
+            pstmt.setString(6, updatedEntity.getStatus().name());
+            pstmt.setInt(7, updatedEntity.getId());
+
+            final int affectedRows = pstmt.executeUpdate();
+
+            if (affectedRows == 0) {
+                return false;
+            }
+
+        } catch (final SQLException e) {
+            e.printStackTrace();
+            System.exit(1);
+        } finally {
+            connectionManager.closeConnection();
+        }
+
+        // Update associated OrderBooks if necessary
+        //final var orderBooks = updatedEntity.getOrderBooks();
+        //final int id = updatedEntity.getId();
+        //
+        //for (int i = 0; i < orderBooks.size(); ++i) {
+        //    orderBooks.get(i).setOrderId(id);
+        //}
+
+        //orderBookRepository.update(updatedEntity.getOrderBooks());
+        //notifyObservers(updatedEntity);
+
+        // Update in-memory cache if applicable
+        orders.put(updatedEntity.getId(), updatedEntity);
+
+        return true;
     }
 
     @Override
@@ -195,7 +244,7 @@ public class OrderRepository implements Repository<Order, Integer> {
 
             try (var generatedKeys = pstmt.getGeneratedKeys()) {
                 for (int index = 0; generatedKeys.next(); ++index) {
-                    final int generatedId = generatedKeys.getInt(1); 
+                    final int generatedId = generatedKeys.getInt(1);
                     entities.get(index).setId(generatedId);
                     orders.put(generatedId, entities.get(index));
                 }
@@ -216,7 +265,6 @@ public class OrderRepository implements Repository<Order, Integer> {
         } finally {
             connectionManager.closeConnection();
         }
-
 
         return entities;
     }
@@ -260,20 +308,20 @@ public class OrderRepository implements Repository<Order, Integer> {
         }
     }
 
-	@Override
-	public void registerObserver(Observer<Order> observer) {
+    @Override
+    public void registerObserver(Observer<Order> observer) {
         this.observers.add(observer);
-	}
+    }
 
-	@Override
-	public void removeObserver(Observer<Order> observer) {
+    @Override
+    public void removeObserver(Observer<Order> observer) {
         this.observers.remove(observer);
-	}
+    }
 
-	@Override
-	public void notifyObservers(final Order newOrder) {
+    @Override
+    public void notifyObservers(final Order newOrder) {
         for (Observer<Order> observer : observers) {
             observer.update(newOrder);
         }
-	}
+    }
 }

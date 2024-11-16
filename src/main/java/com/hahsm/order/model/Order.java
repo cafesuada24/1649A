@@ -10,9 +10,36 @@ import com.hahsm.datastructure.ArrayList;
 
 public class Order implements Comparable<Order> {
     public static enum Status {
-        PROCESSING,
-        SHIPPED,
-        DELIVERED,
+        PROCESSING(0),
+        SHIPPED(1),
+        DELIVERED(2),
+        CANCELLED(3);
+
+        private final int value;
+
+        private Status(int value) {
+            this.value = value;
+        }
+
+        public int getValue() {
+            return value;
+        }
+        @Override
+        public String toString() {
+            switch (value) {
+                case 1:
+                    return "Processing";
+                case 2:
+                    return "Shipping";
+                case 3:
+                    return "Completed";
+                case 4:
+                    return "Cancelled";
+            }
+            return "Undefined";
+        }
+
+
     }
 
     private int id;
