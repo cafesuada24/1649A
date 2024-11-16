@@ -65,6 +65,8 @@ public class OrderRepository implements Repository<Order, Integer> {
 
             // Set parameters for update
             pstmt.setLong(1, updatedEntity.getOrderTime().toEpochSecond(ZoneOffset.UTC));
+            System.out.println(updatedEntity.getOrderTime());
+            System.out.println(updatedEntity.getOrderTime().toEpochSecond(ZoneOffset.UTC));
             if (updatedEntity.getEstimatedDeliveryTime() != null) {
                 pstmt.setLong(2, updatedEntity.getEstimatedDeliveryTime().toEpochSecond(ZoneOffset.UTC));
             } else {
@@ -89,18 +91,6 @@ public class OrderRepository implements Repository<Order, Integer> {
             connectionManager.closeConnection();
         }
 
-        // Update associated OrderBooks if necessary
-        // final var orderBooks = updatedEntity.getOrderBooks();
-        // final int id = updatedEntity.getId();
-        //
-        // for (int i = 0; i < orderBooks.size(); ++i) {
-        // orderBooks.get(i).setOrderId(id);
-        // }
-
-        // orderBookRepository.update(updatedEntity.getOrderBooks());
-        // notifyObservers(updatedEntity);
-
-        // Update in-memory cache if applicable
         orders.put(updatedEntity.getId(), updatedEntity);
 
         return true;
