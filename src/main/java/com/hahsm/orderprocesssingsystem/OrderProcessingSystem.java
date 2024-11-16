@@ -51,8 +51,8 @@ public class OrderProcessingSystem implements Observer<Order> {
                     order.getCustomerAddress(),
                     order.getCustomerPhone(),
                     order.getOrderTime().format(formatter),
-                    order.getEstimatedDeliveryTime().format(formatter),
-                    order.getStatus().name());
+                    order.getEstimatedDeliveryTime() != null ? order.getEstimatedDeliveryTime().format(formatter) : "N/A",
+                    order.getStatus());
             at.addRule();
         }
 

@@ -3,6 +3,7 @@ package com.hahsm.order.repository;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.sql.Types;
 import java.time.ZoneOffset;
 import java.util.Optional;
 import java.util.function.Predicate;
@@ -64,7 +65,11 @@ public class OrderRepository implements Repository<Order, Integer> {
 
             // Set parameters for update
             pstmt.setLong(1, updatedEntity.getOrderTime().toEpochSecond(ZoneOffset.UTC));
-            pstmt.setLong(2, updatedEntity.getEstimatedDeliveryTime().toEpochSecond(ZoneOffset.UTC));
+            if (updatedEntity.getEstimatedDeliveryTime() != null) {
+                pstmt.setLong(2, updatedEntity.getEstimatedDeliveryTime().toEpochSecond(ZoneOffset.UTC));
+            } else {
+                pstmt.setNull(2, Types.INTEGER);
+            }
             pstmt.setString(3, updatedEntity.getCustomerName());
             pstmt.setString(4, updatedEntity.getCustomerAddress());
             pstmt.setString(5, updatedEntity.getCustomerPhone());
@@ -85,15 +90,15 @@ public class OrderRepository implements Repository<Order, Integer> {
         }
 
         // Update associated OrderBooks if necessary
-        //final var orderBooks = updatedEntity.getOrderBooks();
-        //final int id = updatedEntity.getId();
+        // final var orderBooks = updatedEntity.getOrderBooks();
+        // final int id = updatedEntity.getId();
         //
-        //for (int i = 0; i < orderBooks.size(); ++i) {
-        //    orderBooks.get(i).setOrderId(id);
-        //}
+        // for (int i = 0; i < orderBooks.size(); ++i) {
+        // orderBooks.get(i).setOrderId(id);
+        // }
 
-        //orderBookRepository.update(updatedEntity.getOrderBooks());
-        //notifyObservers(updatedEntity);
+        // orderBookRepository.update(updatedEntity.getOrderBooks());
+        // notifyObservers(updatedEntity);
 
         // Update in-memory cache if applicable
         orders.put(updatedEntity.getId(), updatedEntity);
@@ -150,7 +155,11 @@ public class OrderRepository implements Repository<Order, Integer> {
                 var pstmt = conn.prepareStatement(sql)) {
 
             pstmt.setLong(1, newEntity.getOrderTime().toEpochSecond(ZoneOffset.UTC));
-            pstmt.setLong(2, newEntity.getEstimatedDeliveryTime().toEpochSecond(ZoneOffset.UTC));
+            if (newEntity.getEstimatedDeliveryTime() != null) {
+                pstmt.setLong(2, newEntity.getEstimatedDeliveryTime().toEpochSecond(ZoneOffset.UTC));
+            } else {
+                pstmt.setNull(2, Types.INTEGER);
+            }
             pstmt.setString(3, newEntity.getCustomerName());
             pstmt.setString(4, newEntity.getCustomerAddress());
             pstmt.setString(5, newEntity.getCustomerPhone());
@@ -227,7 +236,11 @@ public class OrderRepository implements Repository<Order, Integer> {
             for (int i = 0; i < entities.size(); ++i) {
                 final Order order = entities.get(i);
                 pstmt.setLong(1, order.getOrderTime().toEpochSecond(ZoneOffset.UTC));
-                pstmt.setLong(2, order.getEstimatedDeliveryTime().toEpochSecond(ZoneOffset.UTC));
+                if (order.getEstimatedDeliveryTime() != null) {
+                    pstmt.setLong(2, order.getEstimatedDeliveryTime().toEpochSecond(ZoneOffset.UTC));
+                } else {
+                    pstmt.setNull(2, Types.INTEGER);
+                }
                 pstmt.setString(3, order.getCustomerName());
                 pstmt.setString(4, order.getCustomerAddress());
                 pstmt.setString(5, order.getCustomerPhone());

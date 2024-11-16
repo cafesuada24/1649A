@@ -53,7 +53,7 @@ public class BookCart {
         final Order order = new Order();
         final var now = LocalDateTime.now();
         order.setOrderTime(now);
-        order.setEstimatedDeliveryTime(now.plusSeconds(30));
+        //order.setEstimatedDeliveryTime(now.plusSeconds(30));
         order.setCustomerName(user.name);
         order.setCustomerAddress(user.address);
         order.setCustomerPhone(user.phone);
