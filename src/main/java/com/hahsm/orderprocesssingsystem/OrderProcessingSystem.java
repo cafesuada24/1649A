@@ -1,8 +1,11 @@
 package com.hahsm.orderprocesssingsystem;
 
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Comparator;
 
+import com.hahsm.algorithm.UniformCostSearch;
+import com.hahsm.common.type.Graph;
 import com.hahsm.common.type.Observer;
 import com.hahsm.common.type.Repository;
 import com.hahsm.datastructure.PriorityQueue;
@@ -11,16 +14,22 @@ import com.hahsm.order.model.Order;
 import de.vandermeer.asciitable.AsciiTable;
 
 public class OrderProcessingSystem implements Observer<Order> {
+    private static final double speedKmH = 60;
+    private static final String storageLocation = "Hanoi";
+
     private final Repository<Order, Integer> orderRepo;
 
     private final PriorityQueue<Order> pq;
+    private final Graph cityGraph;
 
     public OrderProcessingSystem(
-            final Repository<Order, Integer> orderRepo
+            final Repository<Order, Integer> orderRepo,
+            final Graph cityGraph
     ) {
         assert orderRepo != null;
         this.orderRepo = orderRepo;
         this.orderRepo.registerObserver(this);
+        this.cityGraph = cityGraph;
         pq = new PriorityQueue<Order>(Comparator.naturalOrder());
         for (Order order : orderRepo.getAll()) {
             pq.add(order);
@@ -30,6 +39,14 @@ public class OrderProcessingSystem implements Observer<Order> {
     @Override
     public void update(Order data) {
         pq.add(data);
+    }
+
+    public void updateOrderStatus(Order order, Order.Status status) {
+        order.setStatus(status);
+        if (status == Order.Status.SHIPPED) {
+           order.setEstimatedDeliveryTime(calculateEstimatedDeliveryTime(order.getCustomerAddress()));
+        }
+        orderRepo.update(order);
     }
 
     @Override
@@ -57,5 +74,11 @@ public class OrderProcessingSystem implements Observer<Order> {
         }
 
         return at.render();
+    }
+
+    private LocalDateTime calculateEstimatedDeliveryTime(String dest) {
+           final double shortestDistance = UniformCostSearch.search(storageLocation, dest, cityGraph);
+           final Long estimatedHour = Math.round(shortestDistance / speedKmH * 3600);
+           return LocalDateTime.now().plusSeconds(estimatedHour);
     }
 }
