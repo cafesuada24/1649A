@@ -8,7 +8,7 @@ CREATE TABLE books (
 CREATE TABLE orders (
   	id integer PRIMARY KEY AUTOINCREMENT,
     order_time integer NOT NULL,
-    estimated_delivery_time integer NOT NULL,
+    estimated_delivery_time integer,
     status TEXT NOT NULL,
     customer_name TEXT NOT NULL,
     customer_address TEXT NOT NULL,
