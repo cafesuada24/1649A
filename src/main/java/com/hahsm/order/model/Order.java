@@ -27,13 +27,13 @@ public class Order implements Comparable<Order> {
         @Override
         public String toString() {
             switch (value) {
-                case 1:
+                case 0:
                     return "Processing";
-                case 2:
+                case 1:
                     return "Shipping";
-                case 3:
+                case 2:
                     return "Completed";
-                case 4:
+                case 3:
                     return "Cancelled";
             }
             return "Undefined";
