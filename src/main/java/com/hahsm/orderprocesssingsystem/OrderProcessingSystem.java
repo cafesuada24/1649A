@@ -33,7 +33,7 @@ public class OrderProcessingSystem implements Observer<Order> {
         this.cityGraph = cityGraph;
         pq = new PriorityQueue<Order>(Comparator.naturalOrder());
         for (Order order : orderRepo.getAll()) {
-            if (order.getStatus() == Status.PROCESSING) {
+            if (order.getStatus() != Status.DELIVERED) {
                 pq.add(order);
             }
         }
