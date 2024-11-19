@@ -48,11 +48,13 @@ public class OrderProcessingSystem implements Observer<Order> {
         assert pq != null;
         assert order != null;
         assert orderRepo != null;
-
+        if (order.getStatus() == status) {
+            return;
+        }
         order.setStatus(status);
         if (status == Order.Status.SHIPPED) {
            order.setEstimatedDeliveryTime(calculateEstimatedDeliveryTime(order.getCustomerAddress()));
-        } else if (status == Order.Status.DELIVERED) {
+        } else if (status == Order.Status.DELIVERED || status == Order.Status.CANCELLED) {
             pq.remove(order);
         }
         orderRepo.update(order);
