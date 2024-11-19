@@ -14,7 +14,6 @@ import com.hahsm.datastructure.ArrayList;
 import com.hahsm.datastructure.HashMap;
 import com.hahsm.book.model.Book;
 import com.hahsm.common.database.DatabaseConstants;
-import com.hahsm.common.type.Observable;
 import com.hahsm.common.type.Observer;
 import com.hahsm.common.type.Repository;
 import com.hahsm.database.DatabaseConnectionManager;
@@ -68,8 +67,6 @@ public class OrderRepository implements Repository<Order, Integer> {
 
             // Set parameters for update
             pstmt.setLong(1, updatedEntity.getOrderTime().toEpochSecond(ZoneOffset.UTC));
-            System.out.println(updatedEntity.getOrderTime());
-            System.out.println(updatedEntity.getOrderTime().toEpochSecond(ZoneOffset.UTC));
             if (updatedEntity.getEstimatedDeliveryTime() != null) {
                 pstmt.setLong(2, updatedEntity.getEstimatedDeliveryTime().toEpochSecond(ZoneOffset.UTC));
             } else {

@@ -105,11 +105,12 @@ public class Order implements Comparable<Order> {
     @Override
     public int compareTo(Order o) {
         if (!getOrderTime().isEqual(o.getOrderTime())) {
-            return getOrderTime().isBefore(o.getOrderTime()) ? 1 : -1;
+            return getOrderTime().isBefore(o.getOrderTime()) ? -1 : 1;
         }
 
-        if (getEstimatedDeliveryTime().isEqual(o.getEstimatedDeliveryTime())) {
-            return getEstimatedDeliveryTime().isBefore(o.getEstimatedDeliveryTime()) ? -1 : 1;
+        if (getEstimatedDeliveryTime() != null) {
+            return getEstimatedDeliveryTime().isEqual(o.getEstimatedDeliveryTime()) ? 0 :
+                getEstimatedDeliveryTime().isBefore(o.getEstimatedDeliveryTime()) ? -1 : 1;
         }
 
         if (getId() != o.getId()) {
