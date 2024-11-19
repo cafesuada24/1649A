@@ -209,7 +209,7 @@ public class App {
             if (res.isEmpty()) {
                 System.out.println("No order with id " + id + " found!");
             } else {
-                System.out.println(res);
+                System.out.println(res.get());
             }
         });
     }
