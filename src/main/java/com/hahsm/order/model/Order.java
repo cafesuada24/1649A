@@ -172,6 +172,7 @@ public class Order implements Comparable<Order> {
 
         String str = String.format("Order Details:\n" +
                 "------------------------------------\n" +
+                "Order id: %d\n" +
                 "Customer Name: %s\n" +
                 "Address: %s\n" +
                 "Phone: %s\n" +
@@ -179,7 +180,14 @@ public class Order implements Comparable<Order> {
                 "Estimated Delivery Time: %s\n" +
                 "Status: %s\n" +
                 "Books (%d):\n ",
-                formattedCustomerName, formattedAddress, formattedPhone, formattedOrderTime, formattedDeliveryTime, status, getOrderBooks().size());
+                    getId(),
+                    formattedCustomerName,
+                    formattedAddress,
+                    formattedPhone, 
+                    formattedOrderTime,
+                    formattedDeliveryTime,
+                    status,
+                    getOrderBooks().size());
 
                 for (final var ob : getOrderBooks()) {
                     str += "\t" + ob.getBook() + "\n";

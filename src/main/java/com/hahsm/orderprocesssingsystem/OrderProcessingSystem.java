@@ -10,6 +10,7 @@ import com.hahsm.common.type.Observer;
 import com.hahsm.common.type.Repository;
 import com.hahsm.datastructure.PriorityQueue;
 import com.hahsm.order.model.Order;
+import com.hahsm.order.model.Order.Status;
 
 import de.vandermeer.asciitable.AsciiTable;
 
@@ -32,7 +33,9 @@ public class OrderProcessingSystem implements Observer<Order> {
         this.cityGraph = cityGraph;
         pq = new PriorityQueue<Order>(Comparator.naturalOrder());
         for (Order order : orderRepo.getAll()) {
-            pq.add(order);
+            if (order.getStatus() == Status.PROCESSING) {
+                pq.add(order);
+            }
         }
     }
 
@@ -42,9 +45,15 @@ public class OrderProcessingSystem implements Observer<Order> {
     }
 
     public void updateOrderStatus(Order order, Order.Status status) {
+        assert pq != null;
+        assert order != null;
+        assert orderRepo != null;
+
         order.setStatus(status);
         if (status == Order.Status.SHIPPED) {
            order.setEstimatedDeliveryTime(calculateEstimatedDeliveryTime(order.getCustomerAddress()));
+        } else if (status == Order.Status.DELIVERED) {
+            pq.remove(order);
         }
         orderRepo.update(order);
     }

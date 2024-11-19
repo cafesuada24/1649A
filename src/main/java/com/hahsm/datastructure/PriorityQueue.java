@@ -56,12 +56,14 @@ public class PriorityQueue<T> implements Queue<T> {
             throw new NoSuchElementException("The queue is empty");
         }
 
-        final T front = queueList.get(0);
-        Util.swapList(queueList, 0, queueList.size() - 1);
-        queueList.remove(queueList.size() - 1);
-        heapify(0);
+        return removeAt(0);
 
-        return front;
+        //final T front = queueList.get(0);
+        //Util.swapList(queueList, 0, queueList.size() - 1);
+        //queueList.remove(queueList.size() - 1);
+        //heapify(0);
+        //
+        //return front;
     }
 
     @Override
@@ -108,9 +110,13 @@ public class PriorityQueue<T> implements Queue<T> {
     }
 
     @Override
-    public boolean remove(Object o) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'remove'");
+    public boolean remove(T order) {
+        int idx = queueList.indexOf(order);
+        if (idx == -1) {
+            throw new IllegalArgumentException("Cannot find order");
+        }
+        removeAt(idx);
+        return true;
     }
 
 	@Override
@@ -122,4 +128,13 @@ public class PriorityQueue<T> implements Queue<T> {
 	public Iterator<T> iterator() {
         return queueList.iterator();
 	}
+
+    private T removeAt(int index) {
+        final T value = queueList.get(index);
+        Util.swapList(queueList, index, queueList.size() - 1);
+        queueList.remove(queueList.size() - 1);
+        heapify(0);
+
+        return value;
+    }
 }

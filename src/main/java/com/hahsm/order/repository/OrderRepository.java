@@ -5,6 +5,7 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
 import java.util.Optional;
 import java.util.function.Predicate;
 
@@ -18,6 +19,8 @@ import com.hahsm.common.type.Observer;
 import com.hahsm.common.type.Repository;
 import com.hahsm.database.DatabaseConnectionManager;
 import com.hahsm.order.model.Order;
+
+import de.vandermeer.asciitable.AsciiTable;
 
 public class OrderRepository implements Repository<Order, Integer> {
     /**
@@ -326,5 +329,32 @@ public class OrderRepository implements Repository<Order, Integer> {
         for (Observer<Order> observer : observers) {
             observer.update(newOrder);
         }
+    }
+
+    @Override
+    public String toString() {
+        final AsciiTable at = new AsciiTable();
+
+        // Define the header row
+        at.addRule();
+        at.addRow("ID", "Customer Name", "Customer Address", "Customer Phone", "Order Time", "Estimated Delivery",
+                "Status");
+        at.addRule();
+
+        final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+
+        for (var order : orders.values()) {
+            at.addRow(
+                    order.getId(),
+                    order.getCustomerName(),
+                    order.getCustomerAddress(),
+                    order.getCustomerPhone(),
+                    order.getOrderTime().format(formatter),
+                    order.getEstimatedDeliveryTime() != null ? order.getEstimatedDeliveryTime().format(formatter) : "N/A",
+                    order.getStatus());
+            at.addRule();
+        }
+
+        return at.render();
     }
 }

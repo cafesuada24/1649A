@@ -206,12 +206,22 @@ public class App {
             final int id = ConsoleHelper.getInteger(sc, "Please enter order id: ");
 
             final var res = orderRepo.getByID(id);
-            if (res.isEmpty()) {
-                System.out.println("No order with id " + id + " found!");
-            } else {
+            if (!isValidOrder(res))  {
+                System.out.println("You have no order with id: " + id);
+            } else  {
                 System.out.println(res.get());
             }
         });
+    }
+
+    private boolean isValidOrder(Optional<Order> res) {
+        if (res.isEmpty())
+            return false;
+        
+        var order = res.get();
+        return order.getCustomerName().equals(currentUser.name) &&
+                order.getCustomerAddress().equals(currentUser.address) &&
+                order.getCustomerPhone().equals(currentUser.phone);
     }
 
     private Frame createCreateOrderFrame() {
@@ -287,7 +297,7 @@ public class App {
 
     private Frame createListAllOrdersFrame() {
         return new Frame((_) -> {
-            System.out.println(ops);
+            System.out.println(orderRepo);
         });
     }
 
